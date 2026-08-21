@@ -1,0 +1,54 @@
+{
+  "events": [
+    {
+      "event_id": "evt_test_build_success_001",
+      "event_type": "build.completed",
+      "schema_version": "1.0.0",
+      "occurred_at": "2026-08-21T12:00:00Z",
+      "recorded_at": "2026-08-21T12:00:00Z",
+      "source": { "system": "builda-v2", "version": "0.4.0" },
+      "subject": { "type": "BuildRun", "id": "build_test_001" },
+      "payload": {
+        "build_run_id": "build_test_001",
+        "passed": true,
+        "preview_url": "http://preview.local",
+        "total_attempts": 1,
+        "repair_loops": 0,
+        "sandbox_restarts": 0
+      },
+      "artifact_refs": [],
+      "integrity": { "payload_sha256": "abc123" }
+    },
+    {
+      "event_id": "evt_test_build_failure_001",
+      "event_type": "build.failure.recorded",
+      "schema_version": "1.0.0",
+      "occurred_at": "2026-08-21T12:01:00Z",
+      "recorded_at": "2026-08-21T12:01:00Z",
+      "source": { "system": "builda-v2", "version": "0.4.0" },
+      "subject": { "type": "Failure", "id": "fail_test_001" },
+      "payload": {
+        "failure_id": "fail_test_001",
+        "failure_class": "TEST_FAILED",
+        "attempt_id": "attempt_test_001",
+        "message": "tests failed: 2 of 5 assertions"
+      },
+      "integrity": { "payload_sha256": "def456" }
+    },
+    {
+      "event_id": "evt_test_strategy_promoted_001",
+      "event_type": "strategy.promoted",
+      "schema_version": "1.0.0",
+      "occurred_at": "2026-08-21T12:02:00Z",
+      "recorded_at": "2026-08-21T12:02:00Z",
+      "source": { "system": "finalbuilds2", "version": "1.0.0" },
+      "subject": { "type": "StrategyVersion", "id": "strategyv_api_worker_7" },
+      "payload": {
+        "strategy_id": "strategy_api_worker",
+        "strategy_version_id": "strategyv_api_worker_7",
+        "promoted_from": "strategyv_api_worker_6"
+      },
+      "integrity": { "payload_sha256": "ghi789" }
+    }
+  ]
+}
