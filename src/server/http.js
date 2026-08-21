@@ -1,11 +1,13 @@
 import http from 'node:http';
 import { URL } from 'node:url';
-import crypto from 'node:crypto';
 import { ControlPlane } from '../controller/control-plane.js';
 import { experimentReport } from '../experiments/report.js';
 import { CapabilityResolver } from '../resolver/capability-resolver.js';
 import { ProcessAttribution } from '../analytics/process-attribution.js';
 import { projectEvent } from '../graph/hydradb/projector.js';
+import { CanonicalEventIngestor } from '../events/canonical-ingestor.js';
+import { CheckpointStore } from '../events/checkpoint-store.js';
+import { createEventStore } from '../events/event-store-factory.js';
 
 async function readJson(req, maxBytes = 1_000_000) {
   const chunks = [];
@@ -30,97 +32,85 @@ function authorized(req, token) {
   return req.headers.authorization === `Bearer ${token}`;
 }
 
-// Strategy evaluation engine
-const strategyStats = new Map();
-
-function recordBuildForStrategy(strategyVersionId, passed) {
-  if (!strategyStats.has(strategyVersionId)) {
-    strategyStats.set(strategyVersionId, { builds: 0, passed: 0, failures: [], durations: [] });
-  }
-  const s = strategyStats.get(strategyVersionId);
-  s.builds++;
-  if (passed) s.passed++;
-}
-
-function evaluateStrategy(strategyVersionId) {
-  const s = strategyStats.get(strategyVersionId);
-  if (!s || s.builds < 3) return null;
-  return {
-    strategy_version_id: strategyVersionId,
-    total_builds: s.builds,
-    success_rate: s.passed / s.builds,
-    needs_canary: s.builds < 30,
-    promotion_candidates: s.passed / s.builds > 0.85 && s.builds >= 5,
-  };
-}
-
-// BuildContext retrieval
-function buildContext(blueprint, graph) {
-  const blueprintLower = (blueprint || '').toLowerCase();
-  const strategies = graph.findEntitiesSync ? graph.findEntitiesSync({ type: 'StrategyVersion' }) : [];
-  const promoted = strategies.filter(s => s.data?.status === 'promoted');
-
-  const knownFailures = [];
-  if (graph.findEntitiesSync) {
-    const failures = graph.findEntitiesSync({ type: 'Failure' });
-    const classCounts = {};
-    for (const f of failures) {
-      const cls = f.data?.failure_class || 'UNKNOWN';
-      classCounts[cls] = (classCounts[cls] || 0) + 1;
-    }
-    for (const [cls, count] of Object.entries(classCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)) {
-      knownFailures.push({ failure_class: cls, occurrence_count: count });
-    }
-  }
-
-  return {
-    context_version: '1',
-    strategy_version: promoted[0]?.data || null,
-    standards: [],
-    known_failures: knownFailures,
-    successful_precedents: [],
-    failed_precedents: [],
-    recommended_checks: ['build_ok', 'preview_ok', 'tests_pass'],
-    evidence_ids: [],
-  };
-}
-
 export function createControlPlaneServer({ controlPlane = ControlPlane.fromEnv(), token = process.env.CONTROL_TOKEN } = {}) {
   const resolver = new CapabilityResolver(controlPlane.graph);
   const processAttribution = new ProcessAttribution(controlPlane.graph);
+
+  // Canonical ingestion pipeline
+  const eventStore = createEventStore();
+  const checkpointStore = new CheckpointStore(`${process.env.FINALBUILDS_ROOT || '.'}/runtime/projection-checkpoint.json`);
+  const ingestor = new CanonicalEventIngestor({
+    eventStore,
+    graph: { query: async (cypher) => { /* TODO: wire Hydra executor */ return { ok: true }; } },
+    projector: projectEvent,
+    checkpointStore,
+  });
+
+  // Strategy evaluation from graph evidence (not in-memory Map)
+  async function evaluateStrategy(strategyVersionId, cohort = {}) {
+    const builds = controlPlane.graph.findEntitiesSync
+      ? controlPlane.graph.findEntitiesSync({ type: 'BuildRun' })
+      : [];
+    const linked = builds.filter(b => {
+      const edges = controlPlane.graph.getEdgesSync ? controlPlane.graph.getEdgesSync(b.id, 'USED_STRATEGY') : [];
+      return edges.some(e => e.targetId === strategyVersionId);
+    });
+    if (linked.length < 3) return null;
+    const passed = linked.filter(b => b.data?.passed).length;
+    return {
+      strategy_version_id: strategyVersionId,
+      total_builds: linked.length,
+      success_rate: passed / linked.length,
+      needs_canary: linked.length < 30,
+      promotion_candidates: passed / linked.length > 0.85 && linked.length >= 5,
+    };
+  }
+
   return http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://localhost');
       if (url.pathname === '/healthz' && req.method === 'GET') return send(res, 200, { ok: true });
       if (!authorized(req, token)) return send(res, 401, { error: 'unauthorized' });
 
-      // --- Events API ---
+      // --- Canonical Event Ingestion ---
       if (url.pathname === '/v1/events' && req.method === 'POST') {
         const event = await readJson(req);
         if (!event.event_type) return send(res, 400, { error: 'event_type required' });
-        await controlPlane.bus.emit(event.event_type, event.payload);
-        // Project into Hydra
-        const queries = projectEvent(event);
-        return send(res, 201, { accepted: true, event_id: event.event_id, hydra_queries: queries.length });
+        const result = await ingestor.ingest(event);
+        return send(res, result.accepted ? 201 : 409, result);
       }
 
       if (url.pathname === '/v1/events/batch' && req.method === 'POST') {
         const { events = [] } = await readJson(req);
-        let accepted = 0;
-        for (const event of events) {
-          if (event.event_type) {
-            await controlPlane.bus.emit(event.event_type, event.payload);
-            accepted++;
-          }
-        }
-        return send(res, 201, { accepted, total: events.length });
+        const result = await ingestor.ingestBatch(events);
+        return send(res, 201, result);
       }
 
       // --- Build Context API ---
       if (url.pathname === '/v1/build-context' && req.method === 'POST') {
         const body = await readJson(req);
-        const ctx = buildContext(body.blueprint, controlPlane.graph);
-        return send(res, 200, ctx);
+        const strategies = controlPlane.graph.findEntitiesSync
+          ? controlPlane.graph.findEntitiesSync({ type: 'StrategyVersion' })
+          : [];
+        const promoted = strategies.filter(s => s.data?.status === 'promoted');
+        const failures = controlPlane.graph.findEntitiesSync
+          ? controlPlane.graph.findEntitiesSync({ type: 'Failure' })
+          : [];
+        const classCounts = {};
+        for (const f of failures) {
+          const cls = f.data?.failure_class || 'UNKNOWN';
+          classCounts[cls] = (classCounts[cls] || 0) + 1;
+        }
+        return send(res, 200, {
+          context_version: '1',
+          strategy_version: promoted[0]?.data || null,
+          standards: [],
+          known_failures: Object.entries(classCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([cls, count]) => ({ failure_class: cls, occurrence_count: count })),
+          successful_precedents: [],
+          failed_precedents: [],
+          recommended_checks: ['build_ok', 'preview_ok', 'tests_pass'],
+          evidence_ids: [],
+        });
       }
 
       // --- Strategy API ---
@@ -133,14 +123,15 @@ export function createControlPlaneServer({ controlPlane = ControlPlane.fromEnv()
 
       if (url.pathname.match(/^\/v1\/strategies\/[^/]+\/evaluate$/) && req.method === 'POST') {
         const id = decodeURIComponent(url.pathname.split('/')[3]);
-        const result = evaluateStrategy(id);
+        const body = await readJson(req).catch(() => ({}));
+        const result = await evaluateStrategy(id, body.cohort);
         if (!result) return send(res, 200, { message: 'insufficient data', strategy_version_id: id });
         return send(res, 200, result);
       }
 
       if (url.pathname.match(/^\/v1\/strategies\/[^/]+\/promote$/) && req.method === 'POST') {
         const id = decodeURIComponent(url.pathname.split('/')[3]);
-        const result = evaluateStrategy(id);
+        const result = await evaluateStrategy(id);
         if (!result || !result.promotion_candidates) {
           return send(res, 400, { error: 'strategy does not meet promotion criteria', result });
         }
@@ -150,7 +141,7 @@ export function createControlPlaneServer({ controlPlane = ControlPlane.fromEnv()
 
       // --- Contracts API ---
       if (url.pathname === '/v1/contracts/version' && req.method === 'GET') {
-        return send(res, 200, { version: 'foundry-event-contract/1.0.0', contract: 'foundry-event-contract' });
+        return send(res, 200, { version: 'foundry-event-contract/1.0.0' });
       }
 
       if (url.pathname === '/v1/contracts/events' && req.method === 'GET') {

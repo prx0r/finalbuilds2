@@ -1,0 +1,54 @@
+{
+  "id": "site_domainnamechecker",
+  "name": "Domain Intelligence Engine",
+  "domain": "domainnamechecker.tradesprior.workers.dev",
+  "custom_domain": "domainnamechecker.dev",
+  "product_id": "product_domainnamechecker",
+  "source": {
+    "repo": "https://github.com/prx0r/domainnamechecker",
+    "worker_path": "worker/src/index.js",
+    "cli_path": "src/main.rs"
+  },
+  "capabilities": [
+    "domain.verify",
+    "domain.generate",
+    "domain.score",
+    "domain.compare_registrars",
+    "domain.mine",
+    "domain.analytics"
+  ],
+  "interfaces": {
+    "web": true,
+    "rest": true,
+    "mcp": true,
+    "cli": true
+  },
+  "mcp_tools": [
+    "verify_domain",
+    "generate_domains",
+    "score_domain",
+    "compare_registrars",
+    "mine_domains",
+    "get_analytics"
+  ],
+  "rest_endpoints": [
+    "GET /api/health",
+    "GET /api/verify/:domain",
+    "GET /api/registrar/:domain",
+    "POST /api/mine",
+    "POST /mcp"
+  ],
+  "standards": {
+    "agent-discovery": "standard_agent_discovery_v2",
+    "seo-core": "standard_seo_core_v1"
+  },
+  "sensors": ["sensor_usage", "sensor_uptime", "sensor_agent_visibility"],
+  "automation": {
+    "risk_class": 1,
+    "auto_patch": true,
+    "auto_merge": { "metadata": true, "code": false }
+  },
+  "dependencies": [],
+  "runtime": "cloudflare-workers",
+  "language": "javascript"
+}

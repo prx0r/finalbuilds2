@@ -19,7 +19,18 @@
       "name": "Domain Intelligence",
       "generator_id": "idea_gen_capability_gap_v1",
       "problem": "Agents can invent names but cannot reliably establish live availability, renewal price, history and conflicts at scale.",
-      "scores": { "delta": 3, "pain": 3, "cost_collapse": 2, "composability": 3, "evidence": 3, "build_leverage": 3 }
+      "scores": { "delta": 3, "pain": 3, "cost_collapse": 2, "composability": 3, "evidence": 3, "build_leverage": 3 },
+      "status": "built",
+      "site_id": "site_domainnamechecker"
+    },
+    {
+      "id": "idea_naming_experiment",
+      "name": "Scientific Naming Experiments",
+      "generator_id": "idea_gen_capability_gap_v1",
+      "problem": "Domain naming is currently a creative guessing exercise. No one measures semantic transmission, agent preference, or category elasticity empirically.",
+      "scores": { "delta": 3, "pain": 2, "cost_collapse": 3, "composability": 3, "evidence": 3, "build_leverage": 2 },
+      "status": "planned",
+      "depends_on": ["site_domainnamechecker", "site_agentseolab"]
     },
     {
       "id": "idea_redirect_chain",

@@ -29,7 +29,7 @@ function upsertNode(label, id, props) {
 function createEdge(fromLabel, fromId, relType, toLabel, toId, props = {}) {
   const propStr = propsToCypher(props);
   const propClause = propStr ? ` {${propStr}}` : '';
-  return `MATCH (a:${fromLabel} {id: '${fromId}'}), (b:${toLabel} {id: '${toId}'}) CREATE (a)-[:${relType}${propClause}]->(b)`;
+  return `MATCH (a:${fromLabel} {id: '${fromId}'}), (b:${toLabel} {id: '${toId}'}) MERGE (a)-[r:${relType}${propClause}]->(b)`;
 }
 
 /**
