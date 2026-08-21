@@ -1,34 +1,27 @@
 /**
- * HydraDB executor — routes writes to available backend.
+ * HydraDB executor — uses proven write patterns.
  * 
- * Current HydraDB limitation: node creation via query API is not supported.
- * Strategy: events are the durable truth. Projection into Hydra is best-effort.
- * Falls back to local graph store when Hydra writes fail.
+ * PROVEN write operations (tested against live HydraDB):
+ * - CREATE (a:X {id:N})-[:REL]->(b:Y {id:M}) — creates both nodes + edge
+ * - CREATE (a:X {id:N})-[:REL]->(b:Y {id:M, props}) — with properties
+ * - MATCH (n:X {id:N}) SET n.prop = val — updates existing nodes
+ * - MATCH (n:X {id:N}) RETURN n.prop — reads
+ * 
+ * NOT SUPPORTED:
+ * - MERGE (any form)
+ * - Standalone node CREATE/MERGE (without edge)
+ * - MATCH + MERGE edge
  */
 
 export class HydraExecutor {
-  constructor({ baseUrl, token, graphId, cellId, localStore } = {}) {
+  constructor({ baseUrl, token, graphId, cellId, allowFallback = true, localStore } = {}) {
     this.baseUrl = baseUrl || process.env.HYDRADB_URL || 'http://127.0.0.1:8443';
     this.token = token || process.env.HYDRADB_TOKEN || '';
     this.graphId = graphId || process.env.HYDRADB_GRAPH_ID || 'default';
     this.cellId = cellId || process.env.HYDRADB_CELL_ID || 'cell-0';
-    this.localStore = localStore; // fallback for writes
-    this._hydraAvailable = null;
-  }
-
-  async isHydraAvailable() {
-    if (this._hydraAvailable !== null) return this._hydraAvailable;
-    try {
-      const resp = await fetch(`${this.baseUrl}/v1/graphs/${this.graphId}/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
-        body: JSON.stringify({ cell_id: this.cellId, query: 'MATCH (n) RETURN n LIMIT 0' }),
-      });
-      this._hydraAvailable = resp.ok;
-    } catch {
-      this._hydraAvailable = false;
-    }
-    return this._hydraAvailable;
+    this.allowFallback = allowFallback;
+    this.localStore = localStore;
+    this.stats = { attempted: 0, hydra_ok: 0, hydra_fail: 0, fallback: 0 };
   }
 
   async query(cypher) {
@@ -44,91 +37,91 @@ export class HydraExecutor {
 
   async executeAll(statements) {
     const results = [];
-    const canWrite = await this.isHydraAvailable();
     for (const stmt of statements) {
+      this.stats.attempted++;
       try {
-        if (canWrite) {
-          // Try Hydra write — may fail on unsupported operations
-          const result = await this.query(stmt);
-          results.push({ statement: stmt, success: true, backend: 'hydra', result });
-        } else {
-          throw new Error('Hydra unavailable');
-        }
+        const result = await this.query(stmt);
+        this.stats.hydra_ok++;
+        results.push({ statement: stmt, success: true, backend: 'hydra', result });
       } catch (err) {
-        // Fall back to local store
-        if (this.localStore) {
+        this.stats.hydra_fail++;
+        if (this.allowFallback && this.localStore) {
           try {
             this.localStore.apply(stmt);
-            results.push({ statement: stmt, success: true, backend: 'local', fallback: true });
+            this.stats.fallback++;
+            results.push({ statement: stmt, success: true, backend: 'local', fallback: true, hydra_error: err.message });
           } catch (localErr) {
-            results.push({ statement: stmt, success: false, error: localErr.message });
+            results.push({ statement: stmt, success: false, backend: 'none', error: localErr.message });
           }
+        } else if (!this.allowFallback) {
+          results.push({ statement: stmt, success: false, backend: 'hydra', error: err.message, strict: true });
         } else {
-          results.push({ statement: stmt, success: false, error: err.message });
+          results.push({ statement: stmt, success: false, backend: 'hydra', error: err.message });
         }
       }
     }
     return results;
   }
+
+  getStats() {
+    return { ...this.stats, fallback_zero: this.stats.fallback === 0 };
+  }
+
+  async isReachable() {
+    try {
+      await this.query('MATCH (n:BuildRun) RETURN n.string_id LIMIT 0');
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 /**
- * Local in-memory graph store — fallback when Hydra writes aren't available.
- * Stores nodes and edges in memory with typed labels.
+ * Local in-memory graph store — fallback for writes.
  */
 export class LocalGraphStore {
   constructor() {
-    this.nodes = new Map(); // id -> { label, props }
-    this.edges = []; // [{ from, to, type, props }]
+    this.nodes = new Map();
+    this.edges = [];
   }
 
   apply(cypher) {
-    // Simple parser for MERGE/SET/MATCH patterns
-    const mergeNodeMatch = cypher.match(/MERGE \(n:(\w+)\s*\{id:\s*(\d+)\}\)/);
-    const setMatch = cypher.match(/SET n \+= \{(.+)\}/);
-    const createEdgeMatch = cypher.match(/MERGE \(a\)-\[r:(\w+)\]->\(b\)/);
-
-    if (mergeNodeMatch) {
-      const [, label, id] = mergeNodeMatch;
-      if (!this.nodes.has(id)) {
-        this.nodes.set(id, { id, label, props: {} });
-      }
-      if (setMatch) {
-        const props = this._parseProps(setMatch[1]);
-        Object.assign(this.nodes.get(id).props, props);
-      }
+    const createEdgeMatch = cypher.match(/CREATE \(a:(\w+) \{id:\s*(\d+).*?\}\)-\[:(\w+)\]->\(b:(\w+) \{id:\s*(\d+)(.*?)\}\)/);
+    if (createEdgeMatch) {
+      const [, aLabel, aId, rel, bLabel, bId, bProps] = createEdgeMatch;
+      if (!this.nodes.has(aId)) this.nodes.set(aId, { id: aId, label: aLabel, props: {} });
+      if (!this.nodes.has(bId)) this.nodes.set(bId, { id: bId, label: bLabel, props: this._parseProps(bProps) });
+      this.edges.push({ from: aId, to: bId, type: rel });
+      return;
     }
 
-    if (createEdgeMatch) {
-      const [, relType] = createEdgeMatch;
-      const fromMatch = cypher.match(/MATCH \(a:\w+ \{id:\s*(\d+)\}\)/);
-      const toMatch = cypher.match(/MATCH.*\(b:\w+ \{id:\s*(\d+)\}\)/);
-      if (fromMatch && toMatch) {
-        this.edges.push({ from: fromMatch[1], to: toMatch[1], type: relType, props: {} });
-      }
+    const setMatch = cypher.match(/MATCH \(n:(\w+) \{id:\s*(\d+)\}\) SET (.+)/);
+    if (setMatch) {
+      const [, label, id, propStr] = setMatch;
+      const node = this.nodes.get(id);
+      if (node) Object.assign(node.props, this._parseSetProps(propStr));
+      return;
     }
   }
 
   _parseProps(str) {
     const props = {};
-    const parts = str.split(', ');
-    for (const part of parts) {
-      const [k, ...vParts] = part.split(': ');
-      const v = vParts.join(': ').replace(/^'|'$/g, '');
-      props[k.trim()] = v;
-    }
+    if (!str) return props;
+    const m = str.match(/string_id:\s*'([^']*)'/);
+    if (m) props.string_id = m[1];
+    const s = str.match(/status:\s*'([^']*)'/);
+    if (s) props.status = s[1];
     return props;
   }
 
-  findNode(id) {
-    return this.nodes.get(String(id)) || null;
-  }
-
-  findNodesByLabel(label) {
-    return [...this.nodes.values()].filter(n => n.label === label);
-  }
-
-  findEdges(fromId, type) {
-    return this.edges.filter(e => e.from === String(fromId) && (!type || e.type === type));
+  _parseSetProps(str) {
+    const props = {};
+    for (const part of str.split(', ')) {
+      const [k, ...vParts] = part.split(' = ');
+      const v = vParts.join(' = ').replace(/^'|'$/g, '');
+      props[k.trim()] = v;
+    }
+    return props;
   }
 }
