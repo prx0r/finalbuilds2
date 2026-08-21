@@ -21,6 +21,11 @@ export class CloudflareClient {
   async getZone(zoneId) { return this.request('GET', `/zones/${zoneId}`); }
   async listZones(name = '') { return this.request('GET', `/zones${name ? `?name=${name}` : ''}`); }
   
+  async listDNSRecords(zoneId, type = null) {
+    const params = type ? `?type=${type}` : '';
+    return this.request('GET', `/zones/${zoneId}/dns_records${params}`);
+  }
+
   async createDNSRecord(zoneId, type, name, content, opts = {}) {
     return this.request('POST', `/zones/${zoneId}/dns_records`, { type, name, content, ttl: opts.ttl || 1, proxied: opts.proxied !== false });
   }

@@ -11,7 +11,7 @@ export class PorkbunClient {
     const response = await fetch(`${this.base}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apikey: this.apiKey, secret: this.secretKey, ...data })
+      body: JSON.stringify({ apikey: this.apiKey, secretapikey: this.secretKey, ...data })
     });
     const result = await response.json();
     if (result.status === 'ERROR') throw new Error(`Porkbun: ${result.message}`);
