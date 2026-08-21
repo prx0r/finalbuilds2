@@ -36,6 +36,17 @@ export class JsonlEventStore {
     await fs.mkdir(path.dirname(this.filePath), { recursive: true });
     await fs.writeFile(this.filePath, '', 'utf8');
   }
+
+  async getById(eventId) {
+    const events = await this.all();
+    return events.find(e => e.event_id === eventId) || null;
+  }
+
+  async appendEnvelope(event) {
+    await fs.mkdir(path.dirname(this.filePath), { recursive: true });
+    await fs.appendFile(this.filePath, `${JSON.stringify(event)}\n`, 'utf8');
+    return event;
+  }
 }
 
 export class InMemoryEventStore {
