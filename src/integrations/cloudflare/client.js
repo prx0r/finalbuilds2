@@ -8,12 +8,14 @@ export class CloudflareClient {
     this.base = 'https://api.cloudflare.com/client/v4';
   }
 
-  async request(method, path, data = null) {
-    const opts = { method, headers: this.headers };
-    if (data) opts.body = JSON.stringify(data);
+  async request(method, path, data = null, extraHeaders = {}) {
+    const opts = { method, headers: { ...this.headers, ...extraHeaders } };
+    if (data) opts.body = typeof data === 'string' ? data : JSON.stringify(data);
     const res = await fetch(`${this.base}${path}`, opts);
-    const json = await res.json();
-    if (!json.success) throw new Error(`Cloudflare: ${JSON.stringify(json.errors)}`);
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch { json = { success: res.ok, result: text }; }
+    if (!json.success) throw new Error(`Cloudflare: ${JSON.stringify(json.errors || json)}`);
     return json;
   }
 
@@ -31,7 +33,7 @@ export class CloudflareClient {
   }
 
   async createWorker(name, script) {
-    return this.request('PUT', `/accounts/${this.accountId}/workers/scripts/${name}`, script);
+    return this.request('PUT', `/accounts/${this.accountId}/workers/scripts/${name}`, script, { 'Content-Type': 'application/javascript' });
   }
 
   async attachCustomDomain(workerName, hostname) {
