@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "foundry-event-contract/1.0.0/build-events",
+  "title": "Build Event Payloads",
+  "description": "Payload schemas for build-family events.",
+  "definitions": {
+    "build.requested": {
+      "type": "object",
+      "required": ["build_run_id", "blueprint", "strategy_version_id"],
+      "properties": {
+        "build_run_id": { "type": "string" },
+        "blueprint": { "type": "string" },
+        "blueprint_hash": { "type": "string" },
+        "strategy_version_id": { "type": "string" },
+        "project_id": { "type": ["string", "null"] },
+        "capability_ids": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "build.started": {
+      "type": "object",
+      "required": ["build_run_id"],
+      "properties": {
+        "build_run_id": { "type": "string" },
+        "idea_id": { "type": ["string", "null"] },
+        "strategy_version_id": { "type": ["string", "null"] },
+        "sandbox_id": { "type": ["string", "null"] }
+      }
+    },
+    "build.attempt.started": {
+      "type": "object",
+      "required": ["attempt_id", "build_run_id", "attempt_number"],
+      "properties": {
+        "attempt_id": { "type": "string" },
+        "build_run_id": { "type": "string" },
+        "attempt_number": { "type": "integer" },
+        "strategy_version_id": { "type": ["string", "null"] },
+        "model_configuration_id": { "type": ["string", "null"] },
+        "continue_session": { "type": "boolean" }
+      }
+    },
+    "build.task.completed": {
+      "type": "object",
+      "required": ["attempt_id", "task_id", "status"],
+      "properties": {
+        "attempt_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "status": { "type": "string", "enum": ["succeeded", "failed", "cancelled"] },
+        "duration_ms": { "type": "integer" },
+        "tokens": {
+          "type": "object",
+          "properties": {
+            "input": { "type": "integer" },
+            "output": { "type": "integer" },
+            "reasoning": { "type": "integer" },
+            "total": { "type": "integer" }
+          }
+        },
+        "build_ok": { "type": "boolean" },
+        "preview_ok": { "type": "boolean" },
+        "files_changed": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "build.failure.recorded": {
+      "type": "object",
+      "required": ["failure_id", "failure_class", "attempt_id"],
+      "properties": {
+        "failure_id": { "type": "string" },
+        "failure_class": { "type": "string" },
+        "attempt_id": { "type": "string" },
+        "message": { "type": "string" },
+        "stack_trace": { "type": "string" },
+        "context": { "type": "object" }
+      }
+    },
+    "build.repair.started": {
+      "type": "object",
+      "required": ["repair_id", "build_run_id", "triggering_failure_id"],
+      "properties": {
+        "repair_id": { "type": "string" },
+        "build_run_id": { "type": "string" },
+        "triggering_failure_id": { "type": "string" },
+        "repair_strategy": { "type": "string" }
+      }
+    },
+    "build.repair.completed": {
+      "type": "object",
+      "required": ["repair_id", "result"],
+      "properties": {
+        "repair_id": { "type": "string" },
+        "result": { "type": "string", "enum": ["fixed", "not_fixed", "partial"] },
+        "attempt_id": { "type": ["string", "null"] }
+      }
+    },
+    "build.audit.completed": {
+      "type": "object",
+      "required": ["attempt_id", "passed"],
+      "properties": {
+        "attempt_id": { "type": "string" },
+        "passed": { "type": "boolean" },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "severity": { "type": "string" },
+              "evidence": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "build.artifact.created": {
+      "type": "object",
+      "required": ["artifact_id", "build_run_id", "sha256"],
+      "properties": {
+        "artifact_id": { "type": "string" },
+        "build_run_id": { "type": "string" },
+        "sha256": { "type": "string" },
+        "size_bytes": { "type": "integer" },
+        "media_type": { "type": "string" },
+        "storage_uri": { "type": "string" }
+      }
+    },
+    "build.completed": {
+      "type": "object",
+      "required": ["build_run_id", "passed"],
+      "properties": {
+        "build_run_id": { "type": "string" },
+        "passed": { "type": "boolean" },
+        "preview_url": { "type": ["string", "null"] },
+        "artifact_id": { "type": ["string", "null"] },
+        "total_attempts": { "type": "integer" },
+        "repair_loops": { "type": "integer" },
+        "sandbox_restarts": { "type": "integer" }
+      }
+    }
+  }
+}

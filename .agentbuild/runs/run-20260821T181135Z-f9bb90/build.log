@@ -1,0 +1,2 @@
+2026-08-21T18:11:35.203113+00:00 [run_start] direct build started {"blueprint": ".agentbuild/blueprints/web-redirect-explain.md"}
+2026-08-21T18:11:35.309413+00:00 [preflight] sandboxd healthy {"url": "http://127.0.0.1:9091"}

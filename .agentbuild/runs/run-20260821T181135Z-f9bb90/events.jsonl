@@ -1,0 +1,2 @@
+{"blueprint": ".agentbuild/blueprints/web-redirect-explain.md", "kind": "run_start", "message": "direct build started", "ts": "2026-08-21T18:11:35.203113+00:00"}
+{"kind": "preflight", "message": "sandboxd healthy", "ts": "2026-08-21T18:11:35.309413+00:00", "url": "http://127.0.0.1:9091"}

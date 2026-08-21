@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "foundry-event-contract/1.0.0/envelope",
+  "title": "Foundry Canonical Event Envelope",
+  "description": "Every event across finalbuilds2, builda-v2, and agentseolab must conform to this envelope.",
+  "type": "object",
+  "required": ["event_id", "event_type", "schema_version", "occurred_at", "recorded_at", "source", "subject", "payload"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^evt_[a-zA-Z0-9_-]{16,}$",
+      "description": "Globally unique stable event identifier"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "idea.created", "idea.generator.executed", "research.recorded",
+        "capability.defined", "capability.updated",
+        "build.requested", "build.started", "build.attempt.started",
+        "build.task.started", "build.task.completed",
+        "build.failure.recorded", "build.repair.started", "build.repair.completed",
+        "build.audit.completed", "build.artifact.created", "build.completed",
+        "product.graduated", "site.registered",
+        "deployment.started", "deployment.completed", "deployment.rolled_back",
+        "observation.recorded", "observation.invalidated",
+        "hypothesis.created", "experiment.created", "experiment.arm.created",
+        "experiment.arm.assigned", "experiment.observation.recorded", "experiment.completed",
+        "standard.registered", "standard.version.registered", "standard.conformance.observed",
+        "strategy.registered", "strategy.version.registered", "strategy.evaluated",
+        "strategy.promoted", "strategy.deprecated", "strategy.rolled_back",
+        "failure.classified",
+        "model.execution.recorded",
+        "artifact.created", "artifact.invalidated"
+      ]
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC3339 timestamp when the event occurred"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC3339 timestamp when the event was recorded"
+    },
+    "source": {
+      "type": "object",
+      "required": ["system", "version"],
+      "properties": {
+        "system": {
+          "type": "string",
+          "enum": ["finalbuilds2", "builda-v2", "agentseolab"]
+        },
+        "version": { "type": "string" },
+        "repo": { "type": "string" },
+        "commit_sha": { "type": "string" }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "required": ["type", "id"],
+      "properties": {
+        "type": { "type": "string" },
+        "id": { "type": "string" }
+      }
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "project_id": { "type": ["string", "null"] },
+        "product_id": { "type": ["string", "null"] },
+        "capability_id": { "type": ["string", "null"] },
+        "experiment_id": { "type": ["string", "null"] }
+      }
+    },
+    "payload": {
+      "type": "object"
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ArtifactRef" }
+    },
+    "causation_id": {
+      "type": ["string", "null"],
+      "description": "Event that caused this event"
+    },
+    "correlation_id": {
+      "type": ["string", "null"],
+      "description": "Shared ID linking events across systems for the same logical operation"
+    },
+    "integrity": {
+      "type": "object",
+      "properties": {
+        "payload_sha256": { "type": "string" },
+        "previous_event_id": { "type": ["string", "null"] }
+      }
+    }
+  },
+  "$defs": {
+    "ArtifactRef": {
+      "type": "object",
+      "required": ["artifact_id", "sha256", "storage_uri"],
+      "properties": {
+        "artifact_id": { "type": "string" },
+        "sha256": { "type": "string" },
+        "size_bytes": { "type": "integer" },
+        "media_type": { "type": "string" },
+        "storage_uri": { "type": "string" }
+      }
+    }
+  }
+}

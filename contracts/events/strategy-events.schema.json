@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "foundry-event-contract/1.0.0/strategy-events",
+  "title": "Strategy Event Payloads",
+  "definitions": {
+    "strategy.registered": {
+      "type": "object",
+      "required": ["strategy_id", "name"],
+      "properties": {
+        "strategy_id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "applies_to": {
+          "type": "object",
+          "properties": {
+            "product_kind": { "type": "string" },
+            "runtime": { "type": "string" },
+            "language": { "type": "string" }
+          }
+        }
+      }
+    },
+    "strategy.version.registered": {
+      "type": "object",
+      "required": ["strategy_id", "strategy_version_id", "version"],
+      "properties": {
+        "strategy_id": { "type": "string" },
+        "strategy_version_id": { "type": "string" },
+        "version": { "type": "integer" },
+        "status": { "type": "string", "enum": ["candidate", "canary", "promoted", "deprecated", "rejected", "rolled_back"] },
+        "instructions": { "type": "object" },
+        "parent_version_ids": { "type": "array", "items": { "type": "string" } },
+        "evidence_ids": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "strategy.evaluated": {
+      "type": "object",
+      "required": ["strategy_version_id", "metrics"],
+      "properties": {
+        "strategy_version_id": { "type": "string" },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "total_builds": { "type": "integer" },
+            "first_attempt_success": { "type": "number" },
+            "eventual_release_rate": { "type": "number" },
+            "median_repair_count": { "type": "number" },
+            "median_duration_ms": { "type": "number" },
+            "p95_duration_ms": { "type": "number" },
+            "security_failures": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "strategy.promoted": {
+      "type": "object",
+      "required": ["strategy_id", "strategy_version_id", "promoted_from"],
+      "properties": {
+        "strategy_id": { "type": "string" },
+        "strategy_version_id": { "type": "string" },
+        "promoted_from": { "type": "string" },
+        "evidence_ids": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "strategy.deprecated": {
+      "type": "object",
+      "required": ["strategy_id", "strategy_version_id"],
+      "properties": {
+        "strategy_id": { "type": "string" },
+        "strategy_version_id": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "strategy.rolled_back": {
+      "type": "object",
+      "required": ["strategy_id", "rolled_back_to"],
+      "properties": {
+        "strategy_id": { "type": "string" },
+        "rolled_back_to": { "type": "string" },
+        "reason": { "type": "string" },
+        "triggered_by": { "type": "string" }
+      }
+    }
+  }
+}

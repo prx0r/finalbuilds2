@@ -1,0 +1,24 @@
+{
+  "app_id": "",
+  "artifact_path": "",
+  "blueprint": ".agentbuild/blueprints/web-redirect-explain.md",
+  "created_at": "2026-08-21T18:11:35.202793+00:00",
+  "evidence": {
+    "blueprint_lint": {
+      "findings": [],
+      "metrics": {},
+      "pass": true
+    }
+  },
+  "final_task_status": "",
+  "initial_attempts": 0,
+  "mode": "direct",
+  "preview_url": "",
+  "release_passed": false,
+  "repair_loops": 0,
+  "run_id": "run-20260821T181135Z-f9bb90",
+  "sandbox_id": "",
+  "sandbox_restarts": 0,
+  "task_failures": 0,
+  "task_ids": []
+}

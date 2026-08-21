@@ -1,0 +1,263 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "foundry-event-contract/1.0.0/ontology/nodes",
+  "title": "Foundry Node Types (HydraDB Labels)",
+  "description": "Canonical node labels for the HydraDB knowledge graph. Each label maps to a specific entity type with required and optional properties.",
+  "definitions": {
+    "IdeaGenerator": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^gen_" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "registered_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Idea": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^idea_" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "scores": { "type": "object" },
+        "seeded_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ResearchReport": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^res_" },
+        "title": { "type": "string" },
+        "recorded_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Capability": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^cap_" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "defined_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "BuildRun": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^build_" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["running", "completed", "failed"] },
+        "passed": { "type": "boolean" },
+        "preview_url": { "type": ["string", "null"] },
+        "started_at": { "type": "string", "format": "date-time" },
+        "completed_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "BuildAttempt": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^attempt_" },
+        "attempt_number": { "type": "integer" },
+        "status": { "type": "string" },
+        "duration_ms": { "type": "integer" },
+        "build_ok": { "type": "boolean" },
+        "preview_ok": { "type": "boolean" },
+        "started_at": { "type": "string", "format": "date-time" },
+        "completed_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Task": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^task_" },
+        "title": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "Failure": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^fail_" },
+        "failure_class": { "type": "string" },
+        "message": { "type": "string" },
+        "recorded_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "FailureClass": {
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "RepairAttempt": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^repair_" },
+        "result": { "type": "string", "enum": ["fixed", "not_fixed", "partial"] },
+        "repair_strategy": { "type": "string" }
+      }
+    },
+    "AuditFinding": {
+      "properties": {
+        "id": { "type": "string" },
+        "severity": { "type": "string" },
+        "evidence": { "type": "string" }
+      }
+    },
+    "ReleaseGate": {
+      "properties": {
+        "id": { "type": "string" },
+        "passed": { "type": "boolean" }
+      }
+    },
+    "Artifact": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^art_" },
+        "sha256": { "type": "string" },
+        "size_bytes": { "type": "integer" },
+        "media_type": { "type": "string" },
+        "storage_uri": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Product": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^prod_" },
+        "name": { "type": "string" },
+        "graduated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Site": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^site_" },
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "registered_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Deployment": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^deploy_" },
+        "status": { "type": "string" },
+        "url": { "type": "string" },
+        "deployed_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Standard": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^std_" },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "StandardVersion": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^stdv_" },
+        "version": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "recommended", "required", "superseded"] },
+        "requirements": { "type": "array" }
+      }
+    },
+    "Strategy": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^strategy_" },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "StrategyVersion": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^strategyv_" },
+        "version": { "type": "integer" },
+        "status": { "type": "string", "enum": ["candidate", "canary", "promoted", "deprecated", "rejected", "rolled_back"] },
+        "instructions": { "type": "object" },
+        "valid_from": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Observation": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^obs_" },
+        "metric": { "type": "string" },
+        "value": {},
+        "status": { "type": "string", "enum": ["active", "invalidated"] },
+        "ingested_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Hypothesis": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^hyp_" },
+        "statement": { "type": "string" },
+        "status": { "type": "string", "enum": ["proposed", "exploratory_support", "replicated", "failed_replication", "contradicted", "retired"] }
+      }
+    },
+    "Experiment": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^exp_" },
+        "name": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ExperimentArm": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^arm_" },
+        "name": { "type": "string" },
+        "allocation": { "type": "number" }
+      }
+    },
+    "Model": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^model_" },
+        "name": { "type": "string" },
+        "family": { "type": "string" }
+      }
+    },
+    "ModelVersion": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^modelv_" },
+        "model_id": { "type": "string" },
+        "version": { "type": "string" },
+        "provider": { "type": "string" }
+      }
+    },
+    "ModelConfiguration": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^mc_" },
+        "model_version_id": { "type": "string" },
+        "temperature": { "type": "number" },
+        "agent_harness": { "type": "string" },
+        "context_mode": { "type": "string" }
+      }
+    },
+    "Component": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^comp_" },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "ComponentVersion": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^compv_" },
+        "component_id": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "Procedure": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^proc_" },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "ProcedureVersion": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^procv_" },
+        "procedure_id": { "type": "string" },
+        "version": { "type": "integer" },
+        "status": { "type": "string" },
+        "instructions": { "type": "object" },
+        "evidence_count": { "type": "integer" },
+        "counterexample_count": { "type": "integer" }
+      }
+    },
+    "Lesson": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^lesson_" },
+        "statement": { "type": "string" },
+        "applicable_context": { "type": "object" },
+        "confidence": { "type": "number" }
+      }
+    }
+  }
+}
