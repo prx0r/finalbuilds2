@@ -20,7 +20,7 @@ test('registry bootstrap materializes sites, standards, capabilities and desired
   const result = await bootstrapRegistry(cp, { root: new URL('..', import.meta.url).pathname.replace(/\/$/, '') });
   assert.equal(result.sites, 2);
   assert.ok(result.capabilities >= 6);
-  assert.ok((await graph.getEntity('site_domain_tool')));
+  assert.ok((await graph.getEntity('site_domainnamechecker')));
   const drift = await cp.reconciler.standardDrift();
   assert.ok(drift.length >= 2);
 });

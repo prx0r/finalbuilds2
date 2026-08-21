@@ -5,6 +5,7 @@
   "custom_domain": "domainnamechecker.dev",
   "product_id": "product_domainnamechecker",
   "source": {
+    "path": "apps/domainnamechecker",
     "repo": "https://github.com/prx0r/domainnamechecker",
     "worker_path": "worker/src/index.js",
     "cli_path": "src/main.rs"

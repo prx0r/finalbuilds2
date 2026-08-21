@@ -4,11 +4,12 @@
  */
 
 export class HydraExecutor {
-  constructor({ baseUrl, token, graphId = 'default', namespace = 'default' } = {}) {
+  constructor({ baseUrl, token, graphId, cellId, namespace } = {}) {
     this.baseUrl = baseUrl || process.env.HYDRADB_URL || 'http://127.0.0.1:8443';
     this.token = token || process.env.HYDRADB_TOKEN || '';
-    this.graphId = graphId;
-    this.namespace = namespace;
+    this.graphId = graphId || process.env.HYDRADB_GRAPH_ID || 'default';
+    this.cellId = cellId || process.env.HYDRADB_CELL_ID || 'cell-0';
+    this.namespace = namespace || process.env.HYDRADB_NAMESPACE || 'default';
   }
 
   async query(cypher) {
@@ -17,15 +18,14 @@ export class HydraExecutor {
       headers: {
         'Content-Type': 'application/json',
         ...(this.token ? { 'Authorization': `Bearer ${this.token}` } : {}),
-        'X-Graph-Namespace': this.namespace,
       },
-      body: JSON.stringify({ query: cypher }),
+      body: JSON.stringify({ cell_id: this.cellId, query: cypher }),
     });
+    const text = await response.text();
     if (!response.ok) {
-      const text = await response.text();
       throw new Error(`Hydra query failed: ${response.status} ${text}`);
     }
-    return response.json();
+    return JSON.parse(text);
   }
 
   async executeAll(statements) {
