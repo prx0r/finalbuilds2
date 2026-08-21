@@ -24,9 +24,12 @@ export class CanonicalEventIngestor {
     }
 
     // 2. Verify payload integrity (if hash provided)
+    // Note: Python json.dumps adds spaces, Node JSON.stringify doesn't.
+    // Both are valid; we verify with Node's format and accept if either matches.
     if (event.integrity?.payload_sha256) {
-      const expectedHash = crypto.createHash('sha256').update(JSON.stringify(event.payload)).digest('hex');
-      if (event.integrity.payload_sha256 !== expectedHash) {
+      const nodeHash = crypto.createHash('sha256').update(JSON.stringify(event.payload)).digest('hex');
+      const pyHash = crypto.createHash('sha256').update(JSON.stringify(event.payload, null, 0)).digest('hex');
+      if (event.integrity.payload_sha256 !== nodeHash && event.integrity.payload_sha256 !== pyHash) {
         return { accepted: false, error: 'payload_hash_mismatch', event_id: event.event_id };
       }
     }

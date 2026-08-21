@@ -50,15 +50,18 @@ export function createBuildReceipt({
       sandbox_restarts: execution?.sandbox_restarts || 0,
     },
 
-    verification: {
-      source_ok: verification?.source_ok ?? false,
-      tests_ok: verification?.tests_ok ?? false,
-      build_ok: verification?.build_ok ?? false,
-      runtime_ok: verification?.runtime_ok ?? false,
-      user_journey_ok: verification?.user_journey_ok ?? false,
-      artifact_rebuild_ok: verification?.artifact_rebuild_ok ?? false,
-      foundry_proof_ok: verification?.foundry_proof_ok ?? false,
-    },
+    verification: (() => {
+      const gates = {
+        source_ok: verification?.source_ok === true,
+        tests_ok: verification?.tests_ok === true,
+        build_ok: verification?.build_ok === true,
+        runtime_ok: verification?.runtime_ok === true,
+        user_journey_ok: verification?.user_journey_ok === true,
+        artifact_rebuild_ok: verification?.artifact_rebuild_ok === true,
+        foundry_proof_ok: verification?.foundry_proof_ok === true,
+      };
+      return gates;
+    })(),
 
     storage: {
       events_persisted: storage?.events_persisted || 0,
@@ -74,7 +77,7 @@ export function createBuildReceipt({
 
     challenge: {
       id: challenge || null,
-      verified: verification?.foundry_proof_ok ?? false,
+      verified: verification?.foundry_proof_ok === true,
     },
 
     hydra: {
@@ -82,7 +85,18 @@ export function createBuildReceipt({
       fallback_zero: hydra_stats?.fallback === 0,
     },
 
-    passed: Object.values(verification || {}).every(v => v === true),
+    passed: (() => {
+      const gates = {
+        source_ok: verification?.source_ok === true,
+        tests_ok: verification?.tests_ok === true,
+        build_ok: verification?.build_ok === true,
+        runtime_ok: verification?.runtime_ok === true,
+        user_journey_ok: verification?.user_journey_ok === true,
+        artifact_rebuild_ok: verification?.artifact_rebuild_ok === true,
+        foundry_proof_ok: verification?.foundry_proof_ok === true,
+      };
+      return Object.values(gates).every(Boolean);
+    })(),
   };
 }
 
