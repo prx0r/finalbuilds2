@@ -1,0 +1,15 @@
+{
+  "id": "recipe_llms_v2",
+  "from": "agent-discovery@1",
+  "to": "agent-discovery@2",
+  "risk_class": 1,
+  "strategy": "deterministic-codemod",
+  "steps": [
+    "Generate/update public llms.txt from canonical site manifest",
+    "Add configured machine-readable alternate link metadata",
+    "Add describedby metadata where supported by the site framework",
+    "Regenerate sitemap/capability metadata",
+    "Run structural, HTTP and agent-discovery evals",
+    "Deploy to canary cohort before fleet promotion"
+  ]
+}

@@ -1,0 +1,53 @@
+openapi: 3.1.0
+info:
+  title: FinalBuilds Control Plane
+  version: 0.1.0
+paths:
+  /healthz:
+    get:
+      responses:
+        '200': { description: Healthy }
+  /v1/observations:
+    post:
+      summary: Record immutable sensor observation
+      responses:
+        '201': { description: Recorded }
+  /v1/controller/tick:
+    post:
+      summary: Select and dispatch bounded build work
+      responses:
+        '200': { description: Controller result }
+  /v1/drift:
+    get:
+      summary: Compute standard drift
+      responses:
+        '200': { description: Drift rows }
+  /v1/drift/repair:
+    post:
+      summary: Create repair tasks for current drift
+      responses:
+        '201': { description: Tasks created }
+  /v1/analytics/attribution:
+    get:
+      summary: Attribute a metric to idea-generation processes
+      parameters:
+        - in: query
+          name: metric
+          schema: { type: string, default: api.calls }
+      responses:
+        '200': { description: Attribution rows }
+  /v1/capabilities/resolve:
+    get:
+      summary: Resolve an intent to a small relevant capability set
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Ranked capabilities }
+  /v1/experiments:
+    post:
+      summary: Create experiment and control/treatment arms
+      responses:
+        '201': { description: Experiment created }

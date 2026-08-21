@@ -1,0 +1,15 @@
+{
+  "id": "site_url_inspector",
+  "name": "URL Inspector",
+  "domain": "inspect.example.com",
+  "product_id": "product_url_inspector",
+  "source": { "path": "apps/url-inspector" },
+  "capabilities": ["web.redirect_chain", "web.metadata", "web.robots"],
+  "interfaces": { "web": true, "rest": true, "mcp": true, "webmcp": false },
+  "standards": {
+    "agent-discovery": "standard_agent_discovery_v2",
+    "seo-core": "standard_seo_core_v1"
+  },
+  "sensors": ["sensor_usage", "sensor_uptime"],
+  "automation": { "risk_class": 1, "auto_patch": true, "auto_merge": { "metadata": true, "code": false } }
+}

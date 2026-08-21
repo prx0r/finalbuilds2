@@ -1,0 +1,64 @@
+# Design System Tokens
+
+## Colors
+
+```yaml
+primary: "#000000"
+secondary: "#ffffff"
+accent: "#3b82f6"
+success: "#22c55e"
+warning: "#f59e0b"
+error: "#ef4444"
+```
+
+## Typography
+
+```yaml
+font_family: "system-ui, -apple-system, sans-serif"
+font_size:
+  xs: "0.75rem"
+  sm: "0.875rem"
+  base: "1rem"
+  lg: "1.125rem"
+  xl: "1.25rem"
+  2xl: "1.5rem"
+  3xl: "2rem"
+```
+
+## Spacing
+
+```yaml
+xs: "0.25rem"
+sm: "0.5rem"
+md: "1rem"
+lg: "1.5rem"
+xl: "2rem"
+2xl: "3rem"
+```
+
+## Border Radius
+
+```yaml
+none: "0"
+sm: "0.25rem"
+md: "0.5rem"
+lg: "1rem"
+full: "9999px"
+```
+
+## Shadows
+
+```yaml
+sm: "0 1px 2px rgba(0,0,0,0.05)"
+md: "0 4px 6px rgba(0,0,0,0.1)"
+lg: "0 10px 15px rgba(0,0,0,0.1)"
+```
+
+## Breakpoints
+
+```yaml
+sm: "640px"
+md: "768px"
+lg: "1024px"
+xl: "1280px"
+```

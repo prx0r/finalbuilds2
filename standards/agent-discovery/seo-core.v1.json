@@ -1,0 +1,13 @@
+{
+  "id": "standard_seo_core_v1",
+  "standard_id": "standard_seo_core",
+  "standard_name": "seo-core",
+  "version": "1.0.0",
+  "status": "required",
+  "requirements": [
+    { "id": "canonical", "severity": "required", "description": "One stable canonical URL per public capability page." },
+    { "id": "sitemap", "severity": "required", "description": "Published sitemap for indexable public surfaces." },
+    { "id": "robots", "severity": "required", "description": "Explicit robots policy with no accidental blocking of public capability docs." },
+    { "id": "structured-data", "severity": "recommended", "description": "Structured data describing software/application capability where applicable." }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "site_domain_tool",
+  "name": "Domain Tool",
+  "domain": "domains.example.com",
+  "product_id": "product_domain_tool",
+  "source": { "path": "apps/domain-tool" },
+  "capabilities": ["domain.generate", "domain.check", "domain.compare"],
+  "interfaces": { "web": true, "rest": true, "mcp": true, "webmcp": true },
+  "standards": {
+    "agent-discovery": "standard_agent_discovery_v2",
+    "seo-core": "standard_seo_core_v1"
+  },
+  "sensors": ["sensor_usage", "sensor_uptime", "sensor_agent_visibility"],
+  "automation": { "risk_class": 1, "auto_patch": true, "auto_merge": { "metadata": true, "code": false } }
+}

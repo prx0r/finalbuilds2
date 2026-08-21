@@ -1,0 +1,19 @@
+{
+  "name": "finalbuilds-hydra-control-plane",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "HydraDB-backed control plane and experiment/lineage spine for a fleet of tiny agent-native tools.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "find src scripts test -name '*.js' -o -name '*.mjs' | xargs -n1 node --check",
+    "demo": "node scripts/demo.mjs",
+    "hydra:smoke": "bash scripts/hydra-smoke.sh",
+    "hydra:integration": "node scripts/hydra-integration.mjs",
+    "validate": "npm run check && npm test && npm run demo && npm run scale:smoke",
+    "scale:smoke": "node scripts/scale-smoke.mjs"
+  }
+}

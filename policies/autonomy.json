@@ -1,0 +1,8 @@
+{
+  "risk_classes": {
+    "0": { "description": "Generated metadata/docs", "approval": "auto", "canary": false },
+    "1": { "description": "Deterministic presentation/SEO/agent metadata", "approval": "tests-and-canary", "canary": true },
+    "2": { "description": "Behavior/API/MCP logic", "approval": "independent-review", "canary": true },
+    "3": { "description": "Auth, payments, permissions, secrets, destructive operations", "approval": "human", "canary": true }
+  }
+}

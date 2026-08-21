@@ -1,0 +1,39 @@
+{
+  "generators": [
+    {
+      "id": "idea_gen_capability_gap_v1",
+      "name": "Capability Gap Scanner",
+      "method": "Find tasks where frontier agents reason well but lack live data, exhaustive measurement, persistence, deterministic action, or verification.",
+      "version": "1"
+    },
+    {
+      "id": "idea_gen_pricing_mismatch_v1",
+      "name": "Pricing Mismatch Scanner",
+      "method": "Find occasional-use paid utilities whose marginal execution cost is near zero and whose subscription model is poorly matched to usage.",
+      "version": "1"
+    }
+  ],
+  "ideas": [
+    {
+      "id": "idea_domain_intelligence",
+      "name": "Domain Intelligence",
+      "generator_id": "idea_gen_capability_gap_v1",
+      "problem": "Agents can invent names but cannot reliably establish live availability, renewal price, history and conflicts at scale.",
+      "scores": { "delta": 3, "pain": 3, "cost_collapse": 2, "composability": 3, "evidence": 3, "build_leverage": 3 }
+    },
+    {
+      "id": "idea_redirect_chain",
+      "name": "Redirect Chain Primitive",
+      "generator_id": "idea_gen_pricing_mismatch_v1",
+      "problem": "A deterministic network primitive is repeatedly packaged behind bloated SEO products.",
+      "scores": { "delta": 2, "pain": 2, "cost_collapse": 3, "composability": 3, "evidence": 3, "build_leverage": 3 }
+    },
+    {
+      "id": "idea_pdf_summary_wrapper",
+      "name": "Generic PDF Summarizer",
+      "generator_id": "idea_gen_capability_gap_v1",
+      "problem": "Generic PDF summarization is already native to frontier models.",
+      "scores": { "delta": 0, "pain": 1, "cost_collapse": 1, "composability": 1, "evidence": 0, "build_leverage": 3 }
+    }
+  ]
+}

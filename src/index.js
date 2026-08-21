@@ -1,0 +1,21 @@
+export { ControlPlane } from './controller/control-plane.js';
+export { FactoryController } from './controller/factory-controller.js';
+export { InMemoryGraphStore } from './graph/inmemory.js';
+export { HydraHttpGraphStore } from './graph/hydradb-http.js';
+export { createGraphStore } from './graph/factory.js';
+export { InMemoryEventStore, JsonlEventStore } from './event/jsonl-store.js';
+export { EventBus } from './event/bus.js';
+export { rebuildProjection } from './event/projector.js';
+export { ExperimentEngine } from './experiments/engine.js';
+export { experimentReport } from './experiments/report.js';
+export { compareMeans } from './experiments/stats.js';
+export { LineageAnalytics } from './analytics/lineage.js';
+export { IdeaPlanner } from './planner/idea-planner.js';
+export { scoreIdea } from './planner/score.js';
+export { Reconciler } from './reconcile/reconciler.js';
+export { StandardsCatalog } from './standards/catalog.js';
+export { JsonlTaskOutbox } from './dispatch/outbox.js';
+export { EntityType, RelKind } from './model/types.js';
+
+export { ProcessAttribution } from './analytics/process-attribution.js';
+export { bootstrapRegistry } from './registry/bootstrap.js';

@@ -1,0 +1,15 @@
+{
+  "id": "standard_agent_discovery_v2",
+  "standard_id": "standard_agent_discovery",
+  "standard_name": "agent-discovery",
+  "version": "2.0.0",
+  "status": "recommended",
+  "requirements": [
+    { "id": "llms-txt", "severity": "required", "description": "Publish a current llms.txt describing canonical machine-readable resources." },
+    { "id": "markdown-alternate", "severity": "recommended", "description": "Expose Markdown alternates where they materially improve machine consumption." },
+    { "id": "describedby", "severity": "recommended", "description": "Use a describedby relation to applicable machine-readable site description where supported." },
+    { "id": "mcp-discovery", "severity": "required-if-applicable", "description": "Publish MCP endpoint and stable tool descriptions for callable capabilities." },
+    { "id": "pricing", "severity": "required-if-paid", "description": "Expose machine-readable per-call pricing and free-vs-metered status." }
+  ],
+  "rollout": { "canary_sites": 5, "promotion_requires_experiment": true }
+}
