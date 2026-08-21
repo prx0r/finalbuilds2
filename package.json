@@ -15,5 +15,8 @@
     "hydra:integration": "node scripts/hydra-integration.mjs",
     "validate": "npm run check && npm test && npm run demo && npm run scale:smoke",
     "scale:smoke": "node scripts/scale-smoke.mjs"
+  },
+  "dependencies": {
+    "neo4j-driver": "^6.2.0"
   }
 }

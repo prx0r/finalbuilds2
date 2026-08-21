@@ -103,12 +103,8 @@ export class LocalR2Fallback {
   }
 
   _eventKey(event) {
-    const d = new Date(event.occurred_at);
-    const year = d.getUTCFullYear();
-    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(d.getUTCDate()).padStart(2, '0');
-    const source = event.source?.system || 'unknown';
-    return path.join(this.baseDir, 'events', `year=${year}`, `month=${month}`, `day=${day}`, `source=${source}`, `${event.event_id}.json`);
+    const eventId = event.event_id || event.id || 'unknown';
+    return path.join(this.baseDir, 'events', `${eventId}.json`);
   }
 
   async append(event) {
@@ -118,17 +114,25 @@ export class LocalR2Fallback {
     return { key: filePath, size: (await fs.stat(filePath)).size };
   }
 
+  async appendEnvelope(event) {
+    return this.append(event);
+  }
+
   async get(eventId) {
     const glob = await this._findFile(eventId);
     if (!glob) return null;
     return JSON.parse(await fs.readFile(glob, 'utf8'));
   }
 
+  async getById(eventId) {
+    return this.get(eventId);
+  }
+
   async _findFile(eventId) {
-    const { execSync } = await import('node:child_process');
+    const filePath = path.join(this.baseDir, 'events', `${eventId}.json`);
     try {
-      const result = execSync(`find "${this.baseDir}/events" -name "${eventId}.json" 2>/dev/null`, { encoding: 'utf8' });
-      return result.trim().split('\n')[0] || null;
+      await fs.access(filePath);
+      return filePath;
     } catch {
       return null;
     }

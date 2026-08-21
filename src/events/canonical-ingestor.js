@@ -23,10 +23,12 @@ export class CanonicalEventIngestor {
       return { accepted: false, error: `invalid_envelope: ${validation.errors.join(', ')}`, event_id: event.event_id };
     }
 
-    // 2. Verify payload integrity
-    const expectedHash = crypto.createHash('sha256').update(JSON.stringify(event.payload, null, 0)).digest('hex');
-    if (event.integrity?.payload_sha256 && event.integrity.payload_sha256 !== expectedHash) {
-      return { accepted: false, error: 'payload_hash_mismatch', event_id: event.event_id };
+    // 2. Verify payload integrity (if hash provided)
+    if (event.integrity?.payload_sha256) {
+      const expectedHash = crypto.createHash('sha256').update(JSON.stringify(event.payload)).digest('hex');
+      if (event.integrity.payload_sha256 !== expectedHash) {
+        return { accepted: false, error: 'payload_hash_mismatch', event_id: event.event_id };
+      }
     }
 
     // 3. Check for existing event (idempotent / conflict detection)
