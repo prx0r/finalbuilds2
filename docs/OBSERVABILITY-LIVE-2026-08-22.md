@@ -36,7 +36,30 @@ Fleet observability wired end-to-end against **live HydraDB** on this box.
    - LocalGraphStore gained `findNode()` (test called a method that didn't exist)
    - domain-search test used curated-meaning domain (`get-api.com`) as if uncurated
 
-## Known caveats
+## Cloudflare hookup — researched & chosen (2026-08-22 PM)
+
+Cloudflare's observability layers evaluated for feeding Hydra:
+
+| Layer | Cost | Direction | Verdict |
+|---|---|---|---|
+| Workers Logs/Traces/Query Builder | Paid plan | dashboard-only | ✗ not exportable |
+| Tail Worker (realtime invocation stream) | Free | push | Phase 3 — needs public control-plane URL (CF Tunnel) |
+| Logpush → R2 | $0.05/M | batch | Later raw-evidence tier (matches FOUNDRY rule: R2 = immutable raw) |
+| Analytics Engine | Paid plan | SQL pull | Redundant while GraphQL API works |
+| **GraphQL Analytics API** | **Free, token-only** | **pull** | ✅ **chosen — zero deploys, real usage data** |
+
+**Implemented:** `scripts/cf-usage.mjs` (hourly cron :05) pulls per-worker
+`requests / errors / cpu_p50` from `workersInvocationsAdaptive` for every site
+manifest carrying `"cloudflare_worker": "<script>"`, then emits canonical
+`observation.recorded` events: `api.calls` (the experiment/attribution metric),
+`cf.errors`, `cf.cpu_p50_us`. Verified live: domainnamechecker 3 calls, 0 errors.
+
+**onething note:** Astro SSR (`@astrojs/node`), NOT a Worker — no wrangler.
+When deployed it gets a registry manifest like the rest; if we want in-app
+telemetry, add Astro middleware emitting canonical events to the control plane
+(then expose the control plane via CF Tunnel). Until then pull sensors cover it.
+
+
 
 - Re-running `register-sites.mjs` duplicates Site nodes (Hydra has no MERGE); re-register only on registry change
 - Lineage is property-based (`site_id`, `string_id`), not edge traversal (Hydra v0.x constraint)

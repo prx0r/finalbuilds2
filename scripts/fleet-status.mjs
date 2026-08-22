@@ -35,14 +35,19 @@ async function main() {
   let down = 0;
   for (const site of sites.sort((a, b) => String(a.id).localeCompare(String(b.id)))) {
     console.log(`\n${site.id}  ${site.url}`);
-    const metrics = ['http.status', 'llms_txt.present', 'robots_txt.present'];
+    const metrics = ['http.status', 'api.calls', 'cf.errors', 'llms_txt.present', 'robots_txt.present'];
     for (const m of metrics) {
       const o = latest.get(`${site.id}:${m}`);
-      if (!o) { console.log(`   ${m.padEnd(20)} no data`); continue; }
-      const bad = (m === 'http.status' && !(o.value > 0 && o.value < 500)) || (m !== 'http.status' && !o.ok);
-      if (bad && m === 'http.status') down++;
-      console.log(`   ${m.padEnd(20)} ${String(o.value).padEnd(6)} ${bad ? 'FAIL' : 'ok  '} (${String(o.recorded_at).slice(0, 19)}Z)`);
+      if (!o) continue;
+      if (m === 'http.status') {
+        const bad = !(o.value > 0 && o.value < 500);
+        if (bad) down++;
+        console.log(`   ${m.padEnd(20)} ${String(o.value).padEnd(6)} ${bad ? 'FAIL' : 'ok  '} (${String(o.recorded_at).slice(0, 19)}Z)`);
+      } else {
+        console.log(`   ${m.padEnd(20)} ${String(o.value).padEnd(6)} (${String(o.recorded_at).slice(0, 19)}Z)`);
+      }
     }
+    if (!latest.has(`${site.id}:http.status`)) console.log('   no observations yet');
   }
   console.log(`\n${sites.length} sites, ${down} down (latest observations from live HydraDB)`);
 }
