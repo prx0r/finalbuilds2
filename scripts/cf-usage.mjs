@@ -16,6 +16,7 @@ import { createEvent } from '../contracts/index.js';
 const CONTROL_URL = process.env.CONTROL_URL || 'http://127.0.0.1:8787';
 const CONTROL_TOKEN = process.env.CONTROL_TOKEN || '';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+try { process.loadEnvFile(path.join(ROOT, '.env')); } catch { /* optional */ }
 const WINDOW_HOURS = Number(process.env.CF_WINDOW_HOURS || 1);
 
 const ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
@@ -40,14 +41,23 @@ async function observe(siteId, metric, value, ok, extraUrl = null) {
     { id: `${generateObsId()}`, site_id: siteId, url: extraUrl, metric, value, ok },
     { context: { site_id: siteId } },
   );
-  const res = await fetch(`${CONTROL_URL}/v1/events`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(CONTROL_TOKEN ? { Authorization: `Bearer ${CONTROL_TOKEN}` } : {}),
-    },
-    body: JSON.stringify(event),
-  });
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(CONTROL_TOKEN ? { Authorization: `Bearer ${CONTROL_TOKEN}` } : {}),
+  };
+  const res = await fetch(`${CONTROL_URL}/v1/events`, { method: 'POST', headers, body: JSON.stringify(event) });
+  // Legacy mirror for drift/conformance machinery
+  await fetch(`${CONTROL_URL}/v1/observations`, {
+    method: 'POST', headers,
+    body: JSON.stringify({
+      id: event.payload.id,
+      sensor_id: 'sensor_usage',
+      subject_id: siteId,
+      metric,
+      value,
+      observed_at: event.occurred_at,
+    }),
+  }).catch(() => {});
   return res.status;
 }
 

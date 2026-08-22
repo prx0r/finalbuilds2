@@ -17,8 +17,8 @@ export class ControlPlane {
   static fromEnv(env = process.env) {
     const graph = createGraphStore(env);
     const eventStore = new JsonlEventStore(env.EVENT_STORE_PATH ?? 'runtime/events.jsonl');
-    const bus = new EventBus({ eventStore, graph });
     const dispatcher = new JsonlTaskOutbox(env.HERMES_OUTBOX_PATH ?? 'runtime/hermes-outbox.jsonl');
+    const bus = new EventBus({ eventStore, graph, dispatcher });
     return new ControlPlane({
       graph,
       eventStore,

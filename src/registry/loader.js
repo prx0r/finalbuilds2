@@ -14,11 +14,19 @@ export async function loadJsonDirectory(dir) {
   return values;
 }
 
+const RUNTIMES = ['cloudflare-workers', 'node-ssr', 'static'];
+
 export function validateSiteManifest(site) {
   const errors = [];
   for (const key of ['id', 'name', 'domain']) if (!site?.[key]) errors.push(`missing ${key}`);
   if (!site?.source?.path) errors.push('missing source.path');
   if (!site?.standards || typeof site.standards !== 'object') errors.push('missing standards object');
+  // site-onboarding v1
+  if (!RUNTIMES.includes(site?.runtime)) errors.push(`runtime must be one of ${RUNTIMES.join(', ')}`);
+  if (!Array.isArray(site?.sensors) || site.sensors.length === 0) errors.push('sensors must be a non-empty array');
+  if (site?.runtime === 'cloudflare-workers' && !site?.cloudflare_worker) {
+    errors.push('cloudflare-workers sites must declare cloudflare_worker');
+  }
   return { ok: errors.length === 0, errors };
 }
 

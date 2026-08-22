@@ -7,7 +7,7 @@ import { HydraHttpGraphStore } from '../src/graph/hydradb-http.js';
   const fakeFetch = async (url, init) => {
     calls.push({ url, init });
     const query = JSON.parse(init.body).query;
-    if (query.includes('RETURN e.id AS id')) {
+    if (query.includes('RETURN e.string_id AS id')) {
       return new Response(JSON.stringify({ rows: [{ id: 'x', type: 'Site', name: 'X', data_json: '{"domain":"x.test"}' }] }), { status: 200 });
     }
     return new Response(JSON.stringify({ rows: [] }), { status: 200 });

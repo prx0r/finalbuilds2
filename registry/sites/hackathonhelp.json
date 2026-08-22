@@ -1,0 +1,32 @@
+{
+  "id": "site_hackathonhelp",
+  "name": "HackathonHelp",
+  "domain": "hackathonhelp.pages.dev",
+  "product_id": "product_hackathonhelp",
+  "source": {
+    "path": "hackathonhelp/web",
+    "repo": "https://github.com/prx0r/hackathonhelp"
+  },
+  "capabilities": [
+    "hackathon.find",
+    "hackathon.guidance"
+  ],
+  "interfaces": {
+    "web": true
+  },
+  "standards": {
+    "agent-discovery": "standard_agent_discovery_v2",
+    "seo-core": "standard_seo_core_v1",
+    "site-onboarding": "standard_site_onboarding_v1"
+  },
+  "sensors": ["sensor_uptime", "sensor_agent_visibility"],
+  "automation": {
+    "risk_class": 1,
+    "auto_patch": false,
+    "auto_merge": { "metadata": true, "code": false }
+  },
+  "dependencies": [],
+  "runtime": "static",
+  "telemetry_exemptions": ["usage-telemetry"],
+  "language": "javascript"
+}

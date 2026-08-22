@@ -1,5 +1,10 @@
 import { EntityType, RelKind } from '../model/types.js';
 
+/** Keep only the listed keys (graph nodes store scalars, not documents). */
+function slim(obj, keys) {
+  return Object.fromEntries(keys.filter(k => obj?.[k] !== undefined).map(k => [k, obj[k]]));
+}
+
 export async function projectEvent(graph, event) {
   const p = event.payload ?? {};
   switch (event.type) {
@@ -32,7 +37,12 @@ export async function projectEvent(graph, event) {
       for (const capabilityId of p.capability_ids ?? []) await graph.link(p.id, RelKind.IMPLEMENTS, capabilityId, { at: event.at });
       break;
     case 'site.registered':
-      await graph.upsertEntity({ id: p.id, type: EntityType.SITE, name: p.name, data: { ...p, registered_at: event.at } });
+      // Hydra caps queries ~1024B — store query-relevant scalars only.
+      // Full manifests live in registry files + the durable event log.
+      await graph.upsertEntity({
+        id: p.id, type: EntityType.SITE, name: p.name,
+        data: slim(p, ['id', 'name', 'domain', 'runtime', 'cloudflare_worker', 'product_id', 'telemetry_exemptions']),
+      });
       if (p.product_id) await graph.link(p.product_id, RelKind.EXPOSES, p.id, { at: event.at });
       break;
     case 'deployment.recorded':
@@ -43,7 +53,16 @@ export async function projectEvent(graph, event) {
       await graph.upsertEntity({ id: p.id, type: EntityType.STANDARD, name: p.name, data: { ...p, registered_at: event.at } });
       break;
     case 'standard.version.registered':
-      await graph.upsertEntity({ id: p.id, type: EntityType.STANDARD_VERSION, name: `${p.standard_name ?? p.standard_id}@${p.version}`, data: { ...p, registered_at: event.at } });
+      // requirements slimmed to {id, severity} — descriptions live in files/events
+      await graph.upsertEntity({
+        id: p.id, type: EntityType.STANDARD_VERSION,
+        name: `${p.standard_name ?? p.standard_id}@${p.version}`,
+        data: {
+          ...slim(p, ['id', 'standard_id', 'standard_name', 'version', 'status', 'previous_id']),
+          requirements: (p.requirements ?? []).map(r => ({ id: r.id, severity: r.severity })),
+          registered_at: event.at,
+        },
+      });
       if (p.previous_id && await graph.getEntity(p.previous_id)) await graph.link(p.id, RelKind.SUPERSEDES, p.previous_id, { at: event.at });
       if (p.standard_id && await graph.getEntity(p.standard_id)) await graph.link(p.standard_id, RelKind.EXPOSES, p.id, { at: event.at });
       break;

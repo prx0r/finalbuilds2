@@ -1,7 +1,7 @@
 {
   "id": "site_llmdeals",
   "name": "LLM Deals",
-  "domain": "llmdeals.org",
+  "domain": "llmdeals-v2.pages.dev",
   "product_id": "product_llmdeals",
   "source": {
     "path": "dell-new",
@@ -17,16 +17,26 @@
   },
   "standards": {
     "agent-discovery": "standard_agent_discovery_v2",
-    "seo-core": "standard_seo_core_v1"
+    "seo-core": "standard_seo_core_v1",
+    "site-onboarding": "standard_site_onboarding_v1"
   },
-  "sensors": ["sensor_uptime", "sensor_agent_visibility"],
+  "sensors": [
+    "sensor_uptime",
+    "sensor_agent_visibility"
+  ],
   "automation": {
     "risk_class": 1,
     "auto_patch": false,
-    "auto_merge": { "metadata": true, "code": false }
+    "auto_merge": {
+      "metadata": true,
+      "code": false
+    }
   },
   "dependencies": [],
-  "runtime": "web",
+  "runtime": "static",
   "language": "javascript",
-  "status": "deploying"
+  "status": "deploying",
+  "telemetry_exemptions": [
+    "usage-telemetry"
+  ]
 }

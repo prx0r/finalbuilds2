@@ -17,14 +17,24 @@ const TIMEOUT_MS = Number(process.env.SENSOR_TIMEOUT_MS || 10000);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 async function postEvent(event) {
-  const res = await fetch(`${CONTROL_URL}/v1/events`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(CONTROL_TOKEN ? { Authorization: `Bearer ${CONTROL_TOKEN}` } : {}),
-    },
-    body: JSON.stringify(event),
-  });
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(CONTROL_TOKEN ? { Authorization: `Bearer ${CONTROL_TOKEN}` } : {}),
+  };
+  // Canonical path (durable JSONL + native Hydra projection)...
+  const res = await fetch(`${CONTROL_URL}/v1/events`, { method: 'POST', headers, body: JSON.stringify(event) });
+  // ...and legacy mirror so drift/conformance machinery sees the same data.
+  await fetch(`${CONTROL_URL}/v1/observations`, {
+    method: 'POST', headers,
+    body: JSON.stringify({
+      id: event.payload.id,
+      sensor_id: 'sensor_uptime',
+      subject_id: event.context.site_id,
+      metric: event.payload.metric,
+      value: event.payload.value,
+      observed_at: event.occurred_at,
+    }),
+  }).catch(() => {});
   return { status: res.status, body: await res.json() };
 }
 

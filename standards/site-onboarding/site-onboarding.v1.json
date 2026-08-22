@@ -1,0 +1,21 @@
+{
+  "id": "standard_site_onboarding_v1",
+  "standard_id": "standard_site_onboarding",
+  "standard_name": "site-onboarding",
+  "version": "1.0.0",
+  "status": "recommended",
+  "description": "What every fleet site must declare and wire before it counts as observable. Checked by scripts/conformance.mjs; drift feeds /v1/drift/repair agent tasks.",
+  "requirements": [
+    { "id": "manifest-complete", "severity": "required", "description": "Manifest declares id, name, domain, source.path, runtime, capabilities, interfaces, standards, sensors." },
+    { "id": "uptime-probe", "severity": "required", "description": "Homepage reachable; http.status observation present and healthy." },
+    { "id": "agent-discovery-files", "severity": "required", "description": "llms.txt and robots.txt return 2xx (satisfies agent-discovery v2 llms-txt requirement)." },
+    { "id": "usage-telemetry", "severity": "required-if-applicable", "description": "cloudflare-workers sites declare cloudflare_worker so api.calls/cf.errors flow via cf-usage; other runtimes attach middleware or declare an exemption in manifest.telemetry_exemptions." },
+    { "id": "health-endpoint", "severity": "recommended", "description": "Machine-readable health endpoint (e.g. /api/health) for cheap deep probes." }
+  ],
+  "telemetry_bindings": {
+    "cloudflare-workers": "cloudflare_worker field + hourly cf-usage.mjs pull",
+    "node-ssr": "Astro/Express middleware emitting canonical events to control plane (requires public control plane URL)",
+    "static": "pull probes only"
+  },
+  "rollout": { "canary_sites": 3, "promotion_requires_experiment": true }
+}

@@ -1,10 +1,17 @@
+import fs from 'node:fs/promises';
 import { loadJsonDirectory, validateSiteManifest } from './loader.js';
 
 export async function bootstrapRegistry(controlPlane, { root = process.cwd() } = {}) {
   const siteDir = `${root}/registry/sites`;
-  const standardDir = `${root}/standards/agent-discovery`;
+  const standardsRoot = `${root}/standards`;
   const sites = await loadJsonDirectory(siteDir);
-  const standards = await loadJsonDirectory(standardDir);
+  // Load every standards/<name>/*.json directory
+  const standardDirs = [];
+  try {
+    const entries = await fs.readdir(standardsRoot, { withFileTypes: true });
+    for (const entry of entries) if (entry.isDirectory()) standardDirs.push(`${standardsRoot}/${entry.name}`);
+  } catch { /* no standards dir yet */ }
+  const standards = (await Promise.all(standardDirs.map(dir => loadJsonDirectory(dir)))).flat();
   const registeredParents = new Set();
   let standardCount = 0;
 

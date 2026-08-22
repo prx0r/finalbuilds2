@@ -41,13 +41,21 @@
   ],
   "standards": {
     "agent-discovery": "standard_agent_discovery_v2",
-    "seo-core": "standard_seo_core_v1"
+    "seo-core": "standard_seo_core_v1",
+    "site-onboarding": "standard_site_onboarding_v1"
   },
-  "sensors": ["sensor_usage", "sensor_uptime", "sensor_agent_visibility"],
+  "sensors": [
+    "sensor_usage",
+    "sensor_uptime",
+    "sensor_agent_visibility"
+  ],
   "automation": {
     "risk_class": 1,
     "auto_patch": true,
-    "auto_merge": { "metadata": true, "code": false }
+    "auto_merge": {
+      "metadata": true,
+      "code": false
+    }
   },
   "dependencies": [],
   "runtime": "cloudflare-workers",
