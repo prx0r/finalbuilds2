@@ -38,5 +38,15 @@
   "status": "deploying",
   "telemetry_exemptions": [
     "usage-telemetry"
-  ]
+  ],
+  "probe_paths": [
+    "api/v1/top.json",
+    "api/v1/deals.json",
+    "api/v1/changes.json"
+  ],
+  "unbundle": {
+    "opportunity": "LLM Deal Intelligence",
+    "rank": 1,
+    "score": 94
+  }
 }

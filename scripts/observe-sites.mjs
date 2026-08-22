@@ -97,6 +97,16 @@ async function main() {
       console.log(`${siteId} ${metric}=${ok} -> ${status}`);
       status === 201 ? recorded++ : failed++;
     }
+
+    // Granular per-path probes (manifest.probe_paths: ["api/health", ...])
+    for (const p of manifest.probe_paths ?? []) {
+      const url = `${base}/${String(p).replace(/^\//, '')}`;
+      const r = await probe(url);
+      const ok = r.status > 0 && r.status < 400;
+      const { status } = await observe(siteId, url, `path.status:${r.status || 'down'}`, r.status, ok);
+      console.log(`${siteId} ${url} -> ${r.status || 'ERR'} ${r.latency_ms}ms (${status})`);
+      status === 201 ? recorded++ : failed++;
+    }
   }
   console.log(`sensor done: ${recorded} observations recorded, ${failed} rejected`);
 }

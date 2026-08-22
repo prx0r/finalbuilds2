@@ -60,5 +60,13 @@
   "dependencies": [],
   "runtime": "cloudflare-workers",
   "cloudflare_worker": "domainnamechecker",
-  "language": "javascript"
+  "language": "javascript",
+  "probe_paths": [
+    "api/health"
+  ],
+  "unbundle": {
+    "opportunity": "Domain Finder + Live Buying",
+    "rank": 5,
+    "score": 87
+  }
 }

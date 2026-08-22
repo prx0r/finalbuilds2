@@ -1,0 +1,52 @@
+{
+  "id": "site_onething",
+  "name": "OneThing",
+  "domain": "onething.undeployed.invalid",
+  "product_id": "product_onething",
+  "source": {
+    "path": "onething",
+    "repo": "https://github.com/prx0r/onething"
+  },
+  "capabilities": [
+    "pdf.sign",
+    "pdf.merge",
+    "pdf.split",
+    "pdf.fill",
+    "qr.generate",
+    "timezone.convert",
+    "ics.generate",
+    "csv.clean",
+    "json.validate",
+    "file.compress",
+    "cancel.lookup"
+  ],
+  "interfaces": {
+    "web": true,
+    "rest": true
+  },
+  "standards": {
+    "agent-discovery": "standard_agent_discovery_v2",
+    "seo-core": "standard_seo_core_v1",
+    "site-onboarding": "standard_site_onboarding_v1"
+  },
+  "sensors": [
+    "sensor_uptime",
+    "sensor_agent_visibility"
+  ],
+  "automation": {
+    "risk_class": 1,
+    "auto_patch": false,
+    "auto_merge": {
+      "metadata": true,
+      "code": false
+    }
+  },
+  "dependencies": [],
+  "runtime": "node-ssr",
+  "telemetry_exemptions": [
+    "usage-telemetry"
+  ],
+  "language": "javascript",
+  "status": "deploying",
+  "deploy_notes": "NOT DEPLOYED. pages.dev name collision: onething.pages.dev is owned by an unrelated third party - do NOT use it. Needs either @astrojs/cloudflare adapter under a new Pages project name, or Node host behind CF Tunnel. Domain field is an RFC-reserved .invalid placeholder until then."
+}

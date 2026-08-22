@@ -98,4 +98,18 @@ node --env-file=.env scripts/cf-usage.mjs   # usage telemetry (cron hourly :05)
 node scripts/conformance.mjs           # check standards (exit 1 = drift)
 node scripts/fleet-status.mjs          # dashboard from live Hydra
 curl -X POST :8787/v1/drift/repair     # create agent repair tasks from drift
+node scripts/outbox-consumer.mjs       # consume tasks -> runtime/repairs/*.md briefs
+                                       #   (cron 5-59/10; set REPAIR_CMD to auto-execute)
 ```
+
+## 8. Loop closure (2026-08-22 evening)
+
+The last mile is real: drift -> /v1/drift/repair -> hermes-outbox.jsonl ->
+outbox-consumer.mjs -> `runtime/repairs/<task>.md` agent briefs carrying failed
+requirements + latest observations from Hydra, plus optional REPAIR_CMD
+execution hook and repair.dispatched observations back into the graph.
+
+Granular telemetry: manifests may declare `"probe_paths": ["api/health", ...]`;
+observe-sites probes each path separately (`path.status:<code>` observations,
+per-endpoint SLO queryable). llmdeals' three agent-API endpoints and
+domainnamechecker's health endpoint are instrumented.
