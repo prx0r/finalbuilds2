@@ -14,11 +14,12 @@
  */
 
 export class HydraExecutor {
-  constructor({ baseUrl, token, graphId, cellId, allowFallback = true, localStore } = {}) {
-    this.baseUrl = baseUrl || process.env.HYDRADB_URL || 'http://127.0.0.1:8443';
-    this.token = token || process.env.HYDRADB_TOKEN || '';
-    this.graphId = graphId || process.env.HYDRADB_GRAPH_ID || 'default';
-    this.cellId = cellId || process.env.HYDRADB_CELL_ID || 'cell-0';
+  constructor({ baseUrl, token, graphId, namespace = 'default', cellId, allowFallback = true, localStore } = {}) {
+    this.baseUrl = baseUrl || process.env.HYDRA_URL || process.env.HYDRADB_URL || 'http://127.0.0.1:8443';
+    this.token = token || process.env.HYDRA_TOKEN || process.env.HYDRADB_TOKEN || '';
+    this.graphId = graphId || process.env.HYDRA_GRAPH_ID || process.env.HYDRADB_GRAPH_ID || 'finalbuilds';
+    this.namespace = namespace || process.env.HYDRA_NAMESPACE || 'default';
+    this.cellId = cellId || process.env.HYDRA_CELL_ID || process.env.HYDRADB_CELL_ID || 'cell-0';
     this.allowFallback = allowFallback;
     this.localStore = localStore;
     this.stats = { attempted: 0, hydra_ok: 0, hydra_fail: 0, fallback: 0 };
@@ -27,7 +28,7 @@ export class HydraExecutor {
   async query(cypher) {
     const resp = await fetch(`${this.baseUrl}/v1/graphs/${this.graphId}/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
+      headers: { 'Content-Type': 'application/json', 'X-Graph-Namespace': this.namespace, ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
       body: JSON.stringify({ cell_id: this.cellId, query: cypher }),
     });
     const text = await resp.text();
@@ -84,6 +85,10 @@ export class LocalGraphStore {
   constructor() {
     this.nodes = new Map();
     this.edges = [];
+  }
+
+  findNode(id) {
+    return this.nodes.get(String(id)) ?? null;
   }
 
   apply(cypher) {

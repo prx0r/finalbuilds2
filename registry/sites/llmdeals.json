@@ -1,0 +1,32 @@
+{
+  "id": "site_llmdeals",
+  "name": "LLM Deals",
+  "domain": "llmdeals.org",
+  "product_id": "product_llmdeals",
+  "source": {
+    "path": "dell-new",
+    "repo": "https://github.com/prx0r/dell-new"
+  },
+  "capabilities": [
+    "llm.deals.aggregate",
+    "llm.pricing.compare",
+    "llm.inference.economics"
+  ],
+  "interfaces": {
+    "web": true
+  },
+  "standards": {
+    "agent-discovery": "standard_agent_discovery_v2",
+    "seo-core": "standard_seo_core_v1"
+  },
+  "sensors": ["sensor_uptime", "sensor_agent_visibility"],
+  "automation": {
+    "risk_class": 1,
+    "auto_patch": false,
+    "auto_merge": { "metadata": true, "code": false }
+  },
+  "dependencies": [],
+  "runtime": "web",
+  "language": "javascript",
+  "status": "deploying"
+}

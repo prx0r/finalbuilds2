@@ -5,6 +5,7 @@ import { experimentReport } from '../experiments/report.js';
 import { CapabilityResolver } from '../resolver/capability-resolver.js';
 import { ProcessAttribution } from '../analytics/process-attribution.js';
 import { projectEvent } from '../graph/hydradb/projector.js';
+import { HydraExecutor } from '../graph/hydradb/executor.js';
 import { CanonicalEventIngestor } from '../events/canonical-ingestor.js';
 import { CheckpointStore } from '../events/checkpoint-store.js';
 import { createEventStore } from '../events/event-store-factory.js';
@@ -36,12 +37,24 @@ export function createControlPlaneServer({ controlPlane = ControlPlane.fromEnv()
   const resolver = new CapabilityResolver(controlPlane.graph);
   const processAttribution = new ProcessAttribution(controlPlane.graph);
 
-  // Canonical ingestion pipeline
+  // Canonical ingestion pipeline — projections go to HydraDB when configured,
+  // otherwise stay in-memory only (projection failures never block ingestion).
+  const hydra = new HydraExecutor({
+    baseUrl: process.env.HYDRA_URL || 'http://127.0.0.1:8443',
+    token: process.env.HYDRA_TOKEN || process.env.HYDRADB_TOKEN || '',
+    graphId: process.env.HYDRA_GRAPH_ID || 'finalbuilds',
+    namespace: process.env.HYDRA_NAMESPACE || 'default',
+    cellId: process.env.HYDRA_CELL_ID || 'cell-0',
+    allowFallback: false,
+  });
+  const graph = String(process.env.GRAPH_BACKEND || '').toLowerCase() === 'hydra'
+    ? hydra
+    : { query: async () => ({ ok: true }) };
   const eventStore = createEventStore();
   const checkpointStore = new CheckpointStore(`${process.env.FINALBUILDS_ROOT || '.'}/runtime/projection-checkpoint.json`);
   const ingestor = new CanonicalEventIngestor({
     eventStore,
-    graph: { query: async (cypher) => { /* TODO: wire Hydra executor */ return { ok: true }; } },
+    graph,
     projector: projectEvent,
     checkpointStore,
   });
@@ -149,6 +162,7 @@ export function createControlPlaneServer({ controlPlane = ControlPlane.fromEnv()
           'build.requested', 'build.started', 'build.attempt.started', 'build.task.completed',
           'build.failure.recorded', 'build.repair.started', 'build.repair.completed',
           'build.audit.completed', 'build.artifact.created', 'build.completed',
+          'product.graduated', 'site.registered',
           'strategy.registered', 'strategy.version.registered', 'strategy.evaluated',
           'strategy.promoted', 'strategy.deprecated', 'strategy.rolled_back',
           'observation.recorded', 'observation.invalidated',

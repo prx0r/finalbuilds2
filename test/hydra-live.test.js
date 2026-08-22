@@ -8,6 +8,7 @@
 
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { HydraExecutor, LocalGraphStore } from '../src/graph/hydradb/executor.js';
 import { projectEvent } from '../src/graph/hydradb/projector.js';
 import { createEvent } from '../contracts/index.js';
@@ -23,6 +24,10 @@ describe('Live HydraDB + Full Pipeline', () => {
   let checkpointStore;
 
   before(() => {
+    // Event IDs are reused across runs while occurred_at changes, so stale
+    // state in /tmp would surface as event_id_conflict. Start clean.
+    fs.rmSync('/tmp/foundry-test-events', { recursive: true, force: true });
+    fs.rmSync('/tmp/foundry-test-checkpoint.json', { force: true });
     localStore = new LocalGraphStore();
     executor = new HydraExecutor({ localStore });
     eventStore = new LocalR2Fallback('/tmp/foundry-test-events');

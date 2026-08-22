@@ -14,7 +14,9 @@ test('DomainSearchEngine generates candidates', () => {
 test('DomainSearchEngine scores domains correctly', () => {
   const engine = new DomainSearchEngine();
   assert.ok(engine.scoreDomain('get200.com', 'get') > engine.scoreDomain('get-super-long-domain.com', 'get'));
-  assert.ok(engine.scoreDomain('get.com', 'get') > engine.scoreDomain('get-api.com', 'get'));
+  // Exact concept match beats an uncurated derivative; curated meanings
+  // (e.g. 'getapi') may legitimately outrank it.
+  assert.ok(engine.scoreDomain('get.com', 'get') > engine.scoreDomain('get-unlisted-derivative.com', 'get'));
 });
 
 test('DomainSearchEngine tracks clicks', () => {

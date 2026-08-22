@@ -18,9 +18,11 @@ test('registry bootstrap materializes sites, standards, capabilities and desired
   const bus = new EventBus({ eventStore, graph });
   const cp = new ControlPlane({ graph, eventStore, bus, dispatcher: new Dispatcher(), factory: null, experiments: new ExperimentEngine({ bus, graph }), standards: new StandardsCatalog({ bus, graph }), reconciler: new Reconciler({ graph, bus }), analytics: new LineageAnalytics(graph) });
   const result = await bootstrapRegistry(cp, { root: new URL('..', import.meta.url).pathname.replace(/\/$/, '') });
-  assert.equal(result.sites, 2);
+  // Site count tracks registry/sites/*.json (currently 3); assert floor, not exact
+  assert.ok(result.sites >= 3);
   assert.ok(result.capabilities >= 6);
   assert.ok((await graph.getEntity('site_domainnamechecker')));
+  assert.ok((await graph.getEntity('site_llmdeals')));
   const drift = await cp.reconciler.standardDrift();
   assert.ok(drift.length >= 2);
 });

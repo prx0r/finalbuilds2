@@ -53,7 +53,7 @@
       "properties": {
         "system": {
           "type": "string",
-          "enum": ["finalbuilds2", "builda-v2", "agentseolab"]
+          "enum": ["finalbuilds2", "builda-v2", "agentseolab", "unbundled"]
         },
         "version": { "type": "string" },
         "repo": { "type": "string" },

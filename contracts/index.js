@@ -13,6 +13,7 @@ export const SYSTEMS = Object.freeze({
   FINALBUILDS2: 'finalbuilds2',
   BUILDA_V2: 'builda-v2',
   AGENTSEOLAB: 'agentseolab',
+  UNBUNDLED: 'unbundled',
 });
 
 export const EVENT_TYPES = Object.freeze([

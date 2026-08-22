@@ -5,3 +5,5 @@ runtime/*.json
 runtime/hydradb-data/
 coverage/
 .DS_Store
+runtime/*.log
+runtime/*.pid

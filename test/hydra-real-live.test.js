@@ -10,13 +10,13 @@ import assert from 'node:assert/strict';
 import { HydraExecutor } from '../src/graph/hydradb/executor.js';
 import { projectEvent } from '../src/graph/hydradb/projector.js';
 
-const TOKEN = 'iolauz-test-token-32-chars-long!!';
+const TOKEN = process.env.HYDRA_TOKEN || 'local-development-token-32-bytes';
 
 describe('Live HydraDB Strict (no fallback)', () => {
   let executor;
 
   it('Hydra is reachable and accepts writes', async () => {
-    executor = new HydraExecutor({ allowFallback: false, token: TOKEN });
+    executor = new HydraExecutor({ allowFallback: false, token: TOKEN, graphId: 'finalbuilds', namespace: 'default', cellId: 'cell-0' });
     const ok = await executor.isReachable();
     assert.ok(ok, 'Hydra must be reachable');
   });

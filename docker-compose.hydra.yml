@@ -1,6 +1,7 @@
 services:
   hydradb:
-    image: ghcr.io/hydra-db/hydradb:v0.1.1
+    image: ghcr.io/hydra-db/hydradb:latest
+    user: "0:0"
     ports:
       - "7687:7687"
       - "8443:8443"

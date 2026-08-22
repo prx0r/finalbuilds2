@@ -162,9 +162,22 @@ export function projectEvent(event) {
       break;
 
     case 'observation.recorded':
-      stmts.push(createNode('Observation', p.id, {
+      stmts.push(createNode('Observation', p.id ?? event.subject.id, {
         metric: p.metric || '',
-        status: 'active',
+        value: p.value ?? '',
+        ok: !!p.ok,
+        site_id: p.site_id || event.context?.site_id || event.subject.id || '',
+        url: p.url || '',
+        recorded_at: event.occurred_at,
+      }));
+      break;
+
+    case 'site.registered':
+      stmts.push(createNode('Site', p.id ?? p.site_id ?? event.subject.id, {
+        name: p.name || '',
+        url: p.url || p.domain || '',
+        runtime: p.runtime || '',
+        registered_at: event.occurred_at,
       }));
       break;
 
