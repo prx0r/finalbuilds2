@@ -50,3 +50,19 @@ reverted from main (history preserved).
 - P7 provider pool: single-key zen; CF Workers AI fallback noted by reviewer
 - P9 registry_to_kanban still feeds old-pipeline tasks (frozen until milestone)
 - e2e MILESTONE: waiting on live builder for run_mt58egkv_d7a886
+
+## 🎉 MILESTONE 03:5x UTC — first fully autonomous verified promotion
+run_mt58egkv_d7a886 / idea_domain_intelligence:
+IDEA(graph admission, score gate) → BuildRun(worktree+spec digest) → WorkOrder kanban
+→ hermes builder committed b44565f (285-line domain_intelligence.py, RDAP provider,
+explicit-UNKNOWN, 26 own tests) → supervisor detected completion → verify-candidate.sh
+(clean clone, env -i scrubbed, frozen suite) → Receipt v3 PASS(all gates)
+→ promoter recompute-invariants → EXACT-SHA merge b44565f to main.
+Post-merge smoke: 26/26 pass on main. Zero human intervention in chain.
+Hardened boundary now includes: TOCTOU exact-sha guard, receipt v3 gates,
+env-scrubbed verifier, fail-closed API auth, idempotent promotion lock.
+
+## Remaining P0/P1 (per docs/BUILD-PLAN-2026-08-23-release-integrity.md)
+- verify-side adversarial harness (malicious candidate probes)
+- outbox ACK semantics + repair_key dedup
+- canonical BuildRun states; single event system; two-phase deploy

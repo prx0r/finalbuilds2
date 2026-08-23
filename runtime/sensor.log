@@ -1646,3 +1646,14 @@ site_url_inspector unreachable: ENOTFOUND
 site_url_inspector llms_txt.present=false -> 201
 site_url_inspector robots_txt.present=false -> 201
 sensor done: 22 observations recorded, 0 rejected
+site_cancelme standard_site_onboarding_v1 FAIL missing=agent-discovery-files
+site_domainnamechecker standard_seo_core_v1 ok  
+site_domainnamechecker standard_agent_discovery_v2 ok  
+site_hackathonhelp standard_agent_discovery_v2 ok  
+site_llmdeals standard_seo_core_v1 ok  
+site_onething standard_agent_discovery_v2 FAIL missing=llms-txt
+site_onething standard_site_onboarding_v1 FAIL missing=agent-discovery-files
+site_onething standard_seo_core_v1 ok  
+site_url_inspector standard_seo_core_v1 ok  
+
+conformance done: 3 non-compliant site/standard pairs
