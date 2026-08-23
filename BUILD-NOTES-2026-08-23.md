@@ -77,3 +77,44 @@ env-scrubbed verifier, fail-closed API auth, idempotent promotion lock.
   /llms.txt,/robots.txt,/ routes back into platform/apps/api/main.py (repo).
 - Keepalive cron */5. Import pilots running: apischemadiff (building),
   openapikit (queued).
+
+---
+
+# SESSION SUMMARY — 2026-08-23 (continued): hypothesis layer live, measurement integrity, consolidation
+
+## What got built this session (chronological)
+1. Act loop closed: drift -> repair briefs -> hermes fleet board (idempotent dispatch-repair.sh)
+2. Import pipeline: create-build-run --import vendors OSS repos w/ provenance SHA
+3. 4 autonomous verified promotions: domain_intelligence, naming_experiment,
+   apischemadiff (import), openapikit (import) — Receipt v3 gates, EXACT-SHA merges,
+   incl. one honest conflict-repair cycle and one supervisor-race recovery
+4. Peer review round b accepted: calibration engine retired (invalid stats),
+   Forecast v2/Resolution v1 schemas + idempotent resolver built, fake Brier deleted,
+   lock ownership nonce, verify-all unified command
+5. Hypothesis layer LIVE: H1/H2/H3 as Hydra nodes, chatgpt_limits hard filter,
+   aligned-first admission (proven behavior change), cross-rubric score
+   normalization (venturelab/qdw/native all comparable)
+6. Evidence substrate: venturelab 91 ideas + 88 research; R2 corpus 98 ideas +
+   6 intel docs; convergence detector watching density; hermes abduction task running
+7. Platform spine: ALL products observable at :8810 (llms.txt/robots/healthz/index);
+   usage middleware counting per-route calls -> Hydra (env fix applied)
+
+## Current known state (verified before this note)
+- platform :8810 200 · control plane :8787 200 · hydra :8443 up · sensors green
+- events.jsonl repaired (torn line quarantined); jsonl-store has append lock
+- forecasts: 5 issued, resolver v2 live, 0 resolved yet (windows open — honest)
+- openapikit builder finishing; redirect_chain building; abduction task generating drafts
+
+## Loose ends (deliberate, not lost)
+1. usage middleware first flush unverified (fixed env; check next cycle)
+2. Abduction drafts need adversarial gate when hermes finishes (my job)
+3. Edge-site deploy automation still manual (P4 backlog)
+4. fleet-status https:// display cosmetic bug
+
+## Where actual DEV needs doing (priority)
+D1. Usage middleware verification (one flush cycle proof) then WAIT for windows
+D2. Gate abduction drafts -> seed admitted hypotheses (adversarial pass)
+D3. Feed next WorkOrder batch (suites staged for top venture ideas)
+D4. findEntities pagination (>1024 entities breaking idea visibility)
+D5. Edge deploy script (wrangler pages from receipts) — after D3 volume proves demand
+NOT needed: more frameworks, more meta-tests, PyMC before data exists.
