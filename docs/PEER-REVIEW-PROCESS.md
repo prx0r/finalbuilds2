@@ -85,6 +85,3 @@ review before first build, not after.
 | 2 | major | hackathonhelp/llmdeals llms.txt = HTML fallback | sensor fixed; sites need real files (drift tasks queued) |
 | 3 | major | Lane B builders wrote shared tree concurrently → 33 transient failures + WIP pollution | resolved this cycle; rule: Lane B tasks must integrate only at completion |
 | 4 | minor | fleet-status renders https:// even for base_url http sites | cosmetic, queued |
-| 5 | note | cancelme down / onething domain lost / url-inspector placeholder | known placeholders; decide deploy-or-drop |
-DOCEOF
-echo done; wc -l docs/PEER-REVIEW-PROCESS.md
