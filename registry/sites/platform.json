@@ -1,0 +1,62 @@
+{
+  "id": "site_platform",
+  "name": "Unbundled Platform",
+  "domain": "2.28.50.109:8810",
+  "base_url": "http://2.28.50.109:8810",
+  "product_id": "product_platform",
+  "source": {
+    "path": "platform",
+    "repo": "https://github.com/prx0r/unbundled"
+  },
+  "capabilities": [
+    "agentmanifest",
+    "audio",
+    "budget",
+    "capabilitycard",
+    "email-arb",
+    "invoice",
+    "landed-cost",
+    "mcp-health",
+    "mcptrust",
+    "ocrroute",
+    "phone",
+    "plans",
+    "registrylens",
+    "resume",
+    "returns",
+    "study",
+    "toolbench",
+    "toolprice",
+    "warranty",
+    "x402"
+  ],
+  "interfaces": {
+    "web": true,
+    "rest": true,
+    "mcp": true
+  },
+  "standards": {
+    "agent-discovery": "standard_agent_discovery_v2",
+    "seo-core": "standard_seo_core_v1",
+    "site-onboarding": "standard_site_onboarding_v1"
+  },
+  "sensors": [
+    "sensor_uptime",
+    "sensor_agent_visibility"
+  ],
+  "automation": {
+    "risk_class": 1,
+    "auto_patch": false,
+    "auto_merge": {
+      "metadata": true,
+      "code": false
+    }
+  },
+  "dependencies": [],
+  "runtime": "node-ssr",
+  "telemetry_exemptions": [
+    "usage-telemetry"
+  ],
+  "language": "python",
+  "status": "live"
+}

@@ -66,3 +66,14 @@ env-scrubbed verifier, fail-closed API auth, idempotent promotion lock.
 - verify-side adversarial harness (malicious candidate probes)
 - outbox ACK semantics + repair_key dedup
 - canonical BuildRun states; single event system; two-phase deploy
+
+## Platform spine integration (05:1x UTC)
+- Unbundled platform now LIVE + publicly observable: http://2.28.50.109:8810
+  (/healthz, /llms.txt w/ 34 capability GETs, /robots.txt, / index)
+- Registered as site_platform (base_url manifest field added to sensor) →
+  uptime+discovery observations flowing → conformance green except 2 known placeholders
+- Served from /tmp/platsrv/appmod.py = committed main.py + discovery routes.
+  PENDING: when OCRRoute builder's main.py edits merge cleanly, port the
+  /llms.txt,/robots.txt,/ routes back into platform/apps/api/main.py (repo).
+- Keepalive cron */5. Import pilots running: apischemadiff (building),
+  openapikit (queued).

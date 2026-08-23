@@ -77,7 +77,7 @@ async function main() {
   for (const file of files) {
     const manifest = JSON.parse(await fs.readFile(path.join(dir, file), 'utf8'));
     const siteId = manifest.id;
-    const base = `https://${manifest.domain}`;
+    const base = manifest.base_url || `https://${manifest.domain}`;
 
     // Homepage health
     const home = await probe(base);
