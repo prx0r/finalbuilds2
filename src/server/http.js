@@ -200,6 +200,15 @@ export function createControlPlaneServer({ controlPlane = ControlPlane.fromEnv()
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const port = Number(process.env.PORT ?? 8787);
+  const host = process.env.HOST ?? '127.0.0.1'; // P5-17: fail-closed default bind
+  const token = process.env.CONTROL_TOKEN ?? '';
+  const loopback = ['127.0.0.1', 'localhost', '::1'].includes(host);
+  if (!loopback && !token) {
+    console.error(`REFUSING STARTUP: non-loopback HOST=${host} without CONTROL_TOKEN (P5-17 fail-closed auth)`);
+    process.exit(78);
+  }
+  if (token) console.log('auth: CONTROL_TOKEN required on mutating endpoints');
+  else console.log('auth: WARNING no CONTROL_TOKEN set — loopback-only binding enforced');
   const server = createControlPlaneServer();
-  server.listen(port, () => console.log(`finalbuilds control plane listening on :${port}`));
+  server.listen(port, host, () => console.log(`finalbuilds control plane listening on ${host}:${port}`));
 }

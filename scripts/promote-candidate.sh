@@ -39,7 +39,7 @@ trap 'rmdir "$LOCK" 2>/dev/null' EXIT
 read -r RECEIPT_RUN RESULT CANDIDATE BASE SPEC_DIGEST ACC_DIGEST < <(python3 - <<PY
 import json
 r = json.load(open("$RUN_DIR/receipt.json"))
-print(r.get("run_id",""), r.get("result",""), r.get("candidate_commit",""), r.get("base_commit",""), r.get("spec_digest",""), r.get("acceptance_digest",""))
+print(r.get("run_id",""), r.get("result",""), r.get("candidate_commit",""), r.get("base_commit",""), r.get("spec_digest",""), r.get("public_acceptance_digest") or r.get("acceptance_digest",""))
 PY
 ) || err3 "unreadable receipt"
 

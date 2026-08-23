@@ -43,10 +43,20 @@ mkdir -p "$CLONE/.acceptance"
 cp -r "$ACCEPT_DIR"/. "$CLONE/.acceptance/"
 cd "$CLONE" || fail_err "cannot enter clone"
 
-ACC_LOG="$(mktemp)"; "$PYBIN" -m pytest .acceptance -q --tb=short >"$ACC_LOG" 2>&1; ACC_EXIT=$?
+# P0-2 containment: candidate code runs with a SCRUBBED environment — no
+# factory/CF/Hydra/git credentials are visible to anything pytest imports.
+run_pytest() { # <log> <target...>
+  local log=$1; shift
+  env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$CLONE" LANG=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 TMPDIR="$CLONE/.tmp" \
+    "$PYBIN" -m "$@" >"$log" 2>&1
+}
+mkdir -p "$CLONE/.tmp"
+
+ACC_LOG="$(mktemp)"; run_pytest "$ACC_LOG" pytest .acceptance -q --tb=short; ACC_EXIT=$?
 tail -n 5 "$ACC_LOG" >&2
 
-if [ -d tests ]; then OWN_LOG="$(mktemp)"; "$PYBIN" -m pytest tests -q --tb=short >"$OWN_LOG" 2>&1; OWN_EXIT=$?; else OWN_EXIT=-1; OWN_LOG="/dev/null"; fi
+if [ -d tests ]; then OWN_LOG="$(mktemp)"; run_pytest "$OWN_LOG" pytest tests -q --tb=short; OWN_EXIT=$?; else OWN_EXIT=-1; OWN_LOG="/dev/null"; fi
 
 SRC_COUNT=$(find . -path ./.acceptance -prune -o -type f \( -name '*.py' -o -name '*.rs' -o -name '*.js' -o -name '*.ts' -o -name '*.go' \) -print | wc -l)
 
