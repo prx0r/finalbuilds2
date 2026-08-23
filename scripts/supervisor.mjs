@@ -100,6 +100,32 @@ async function main() {
       console.log(`${rid}: ${verdict} (verify exit ${exitCode}) — branch kept as evidence`);
     }
   }
+  // ---- lane B: registry builds ([idea_id] tasks) -> post_build v2 integration
+  try {
+    const stateP = '/root/unbundled/registry/postbuild-state.json';
+    let done = {};
+    try { done = JSON.parse(await fs.readFile(stateP,'utf8')); } catch {}
+    const reg = JSON.parse(await fs.readFile('/root/unbundled/registry/ideas.registry.json','utf8'));
+    const statusById = Object.fromEntries(reg.ideas.map(i => [i.id, i.status]));
+    for (const line of boardText.split('\n')) {
+      const tm = line.match(/(t_[0-9a-f]{8})\s+done\s+\S*\s*\[([a-z0-9_]+)\]/);
+      if (!tm) continue;
+      const taskId = tm[1], ideaId = tm[2];
+      if (done[taskId]) continue;
+      if (!(ideaId in statusById)) continue;
+      if (statusById[ideaId] === 'BUILT_PLATFORM') { done[taskId] = 'already-integrated'; continue; }
+      console.log(`lane B: integrating ${taskId} -> ${ideaId}`);
+      try {
+        await exec('bash', ['/root/unbundled/scripts/post_build.sh', taskId, ideaId], { timeout: 300000 });
+        done[taskId] = 'integrated';
+        console.log(`${ideaId}: post_build integrated`);
+      } catch (e) {
+        done[taskId] = `failed: ${String(e.message).slice(0,80)}`;
+        console.error(`${ideaId}: post_build failed`, String(e.message).slice(0,80));
+      }
+    }
+    await fs.writeFile(stateP, JSON.stringify(done, null, 1));
+  } catch (e) { console.error('lane B error:', e.message); }
 }
 
 main().catch(e => { console.error('supervisor error:', e.message); process.exit(3); });

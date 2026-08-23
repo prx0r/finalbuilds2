@@ -17,7 +17,13 @@
         "mechanism": "registry/chatgpt_limits.json capability classes; an idea whose core job falls outside every listed class is rejected at admission"
       },
       "predictions": [
-        {"id": "H1P1", "claim": "wrapper products whose core job is one good chat prompt plateau near zero recurring usage", "metric": "platform capability usage_30d", "threshold": "<=10 calls", "window_days": 30}
+        {
+          "id": "H1P1",
+          "claim": "wrapper products whose core job is one good chat prompt plateau near zero recurring usage",
+          "metric": "platform capability usage_30d",
+          "threshold": "<=10 calls",
+          "window_days": 30
+        }
       ],
       "status": "active",
       "created_at": "2026-08-23"
@@ -30,8 +36,19 @@
         "mechanism": "rubric features verifiability + data_access + low_integration_cost reward agent-convenience; WorkOrder spec must state the token-saving or capability delta"
       },
       "predictions": [
-        {"id": "H2P1", "claim": "agent-facing endpoints (machine-discoverable, typed, cheap) get disproportionate usage vs human-only pages", "metric": "ratio api.calls : web visits per product", "threshold": ">=3:1", "window_days": 30},
-        {"id": "H2P2", "claim": "products exposing MCP tools see agent-origin traffic share grow over time", "metric": "share of mcp-tool-origin calls", "threshold": "monotonic increase over 90d"}
+        {
+          "id": "H2P1",
+          "claim": "agent-facing endpoints (machine-discoverable, typed, cheap) get disproportionate usage vs human-only pages",
+          "metric": "ratio api.calls : web visits per product",
+          "threshold": ">=3:1",
+          "window_days": 30
+        },
+        {
+          "id": "H2P2",
+          "claim": "products exposing MCP tools see agent-origin traffic share grow over time",
+          "metric": "share of mcp-tool-origin calls",
+          "threshold": "monotonic increase over 90d"
+        }
       ],
       "status": "active",
       "created_at": "2026-08-23"
@@ -44,11 +61,93 @@
         "mechanism": "no auth/billing/subscription scaffolding in MVPs (already a Lane-A rule); incumbent_price signals justify unbundles; free serving cost must be ~0"
       },
       "predictions": [
-        {"id": "H3P1", "claim": "free-tier unbundles of paid incumbents reach usage parity with paid originals faster than paid clones would", "metric": "time-to-first-100-calls vs incumbent age", "window_days": 60},
-        {"id": "H3P2", "claim": "incumbent prices in our niches rise while our free equivalents gain usage (arbitrage window open)", "metric": "signal.incumbent_price_min slope > 0 AND platform usage slope > 0", "window_days": 90}
+        {
+          "id": "H3P1",
+          "claim": "free-tier unbundles of paid incumbents reach usage parity with paid originals faster than paid clones would",
+          "metric": "time-to-first-100-calls vs incumbent age",
+          "window_days": 60
+        },
+        {
+          "id": "H3P2",
+          "claim": "incumbent prices in our niches rise while our free equivalents gain usage (arbitrage window open)",
+          "metric": "signal.incumbent_price_min slope > 0 AND platform usage slope > 0",
+          "window_days": 90
+        }
       ],
       "status": "active",
       "created_at": "2026-08-23"
+    },
+    {
+      "id": "H4_receipt_gated_settlement",
+      "statement": "Within 90 days, agent-commerce infrastructure increasingly gates payment release on machine-verifiable proof of execution (signed receipts/attestations), observable as a rising share of x402-discoverable commerce resources advertising receipt/proof/escrow semantics.",
+      "mechanism": "Payment networks and marketplaces carry fraud/dispute risk they cannot price when an agent's claim of 'task done' is unverifiable. Escrow-by-proof converts disputes (expensive, human-adjudicated) into signature checks (cheap, deterministic), so rational platforms adopt proof-gating before regulators or chargeback economics force them to. Standards bodies (IETF SCITT, FIDO) standardize last, confirming buyer-side demand already exists.",
+      "cites_evidence": [
+        "vl_ev_ac623d31 [venturelab] Agent receipts emerging — IETF SCITT profile defines tamper-evident, signed, offline-verifiable AI-agent action receipts",
+        "vl_ev_77cc32f0 [venturelab] Physical execution proof — MeatLayer includes proof uploads such as photo/video/GPS before payment release",
+        "vl_ev_ba4a9a9c [venturelab] Payment mandates standardizing — Google AP2 defines verifiable intent mandates including price/timing conditions and moved to FIDO standardization",
+        "vl_re_bb76b023 [venturelab research] Proof Schema Registry for Agent Tasks (VENT_PROOF_SCHEMA_REGISTRY, recurred twice in corpus)"
+      ],
+      "prediction": {
+        "metric": "signal.x402_resources — share of x402 Bazaar resources whose title/description matches receipt|proof|verification|escrow|attestation keywords (daily collector already hits the discovery endpoint)",
+        "threshold": ">= 25% relative growth of that keyword slice vs its baseline count at draft date",
+        "window_days": 30
+      },
+      "novelty_note": "existing_ideas contains receipt PROTOCOLS/products (vent_agent_receipt_protocol, vent_1786993090_receipt, vent_1786993095_receipt, vent_proof_schema_registry, vent_1786992645_0). This is not another protocol: it is a market-structure claim that proof-gating becomes a settlement prerequisite, which predicts DEMAND for those protocol products and is falsifiable independently of whether we build any of them.",
+      "status": "probation",
+      "generation": {
+        "source": "hermes_abduction_v1",
+        "evidence_digest": "runtime/evidence-digest.json",
+        "admitted_at": "2026-08-23T09:59:04.015959+00:00",
+        "gate": "adversarial-pass"
+      }
+    },
+    {
+      "id": "H5_grounded_reputation_displaces_self_report",
+      "statement": "Reputation systems grounded in verifiable interaction receipts will displace self-reported reputation in agent ecosystems within two quarters, visible as accelerating traction of receipt-grounding reference implementations while ungrounded reputation registries stall.",
+      "mechanism": "Self-reported reputation is Sybil-cheap: an empirical ERC-8004 study found records rarely grounded in verifiable interactions and heavily manipulated. When trust signals are cheap to fake, buyers discount them to zero and rationally pay for grounded alternatives — the same substitution for which Truepic already extracts enterprise revenue in insurance/lending/warranties. Signed receipts (SCITT-style) make grounding nearly free at the margin, collapsing the cost differential that kept self-reported reputation dominant.",
+      "cites_evidence": [
+        "vl_ev_e9f6baf6 [venturelab] Reputation weakness is opportunity — empirical ERC-8004 study finds reputation records rarely grounded in verifiable interactions and heavily affected by Sybil behavior",
+        "vl_ev_a21229e7 [venturelab] Enterprise visual verification — Truepic sells verified capture/remote inspection into insurance, lending, warranties and asset verification",
+        "vl_re_ac5d0662 [venturelab research] Evidence-Grounded Agent Capability Reputation (VENT_CAPABILITY_REPUTATION)",
+        "vl_re_c23eb616 [venturelab research] Grounded reputation from evidence-grounded receipts (VENT_1786993091_reputation) — independent research record converging on the same mechanism"
+      ],
+      "prediction": {
+        "metric": "aggregate traction of >= 3 distinct receipt-grounding reference projects (ERC-8004 registry SDKs, SCITT implementations, verifiable-credential reputation libs): signal.pypi_downloads_30d + signal.npm_downloads_30d + GitHub star deltas from collect_signals.py",
+        "threshold": "aggregate >= 30% growth over trailing 30d with at least 3 distinct projects contributing (no single project > 60% of the move)",
+        "window_days": 30
+      },
+      "novelty_note": "existing_ideas has reputation PRODUCTS (vent_capability_reputation, vent_1786993091_reputation, vent_1786993093_reputation, vent_work_receipt___reput). Those propose building a grounded-reputation service; this hypothesis predicts the ADOPTION CURVE and displacement direction, so it can PASS even if none of our products ship, and its failure would demote the whole reputation-product family.",
+      "status": "probation",
+      "generation": {
+        "source": "hermes_abduction_v1",
+        "evidence_digest": "runtime/evidence-digest.json",
+        "admitted_at": "2026-08-23T09:59:04.015988+00:00",
+        "gate": "adversarial-pass"
+      }
+    },
+    {
+      "id": "H6_rentable_human_market_receipts",
+      "statement": "Rentable-human marketplaces (agents purchasing human actions) show sustained supply growth, and their binding constraint migrates from sourcing supply to machine-verifiable completion of human tasks — making machine-readable human-work receipts the scarce commodity, not the marketplace itself.",
+      "mechanism": "Agents cannot produce CAPTCHA passes, wet signatures, physical presence, or jurisdictionally-bound identifications; marketplaces supplying these emerged organically and reached scale fast (RentAHuman reports 784k+ listed humans across 100+ countries with REST/MCP access), which only happens under pre-existing demand. As supply deepens, competition compresses marketplace margins toward zero (listing is undifferentiated), but acceptance automation does not commoditize: an agent that cannot verify a human actually performed the task either overpays for fraud or drowns in disputes — so value migrates to the verifiable-completion layer, exactly the proof-before-payment pattern MeatLayer already runs for physical jobs.",
+      "cites_evidence": [
+        "vl_ev_044b7dc4 [venturelab] Cross-market demand — RentAHuman exposes REST/MCP and reports 784k+ rentable humans across 100+ countries",
+        "vl_re_c983b41d [venturelab research] RealityRouter competitive scan (VENT_RealityRouter) — independent research record identifying RentAHuman as direct competitor with REST/MCP capability",
+        "vl_re_33ac2b95 [venturelab research] Agent-native human-inference verification API (VENT_1786992636_1)",
+        "vl_re_56a8f2d1 [venturelab research] Machine-readable physical-world receipt protocol (VENT_1786992633_1)"
+      ],
+      "prediction": {
+        "metric": "signal.rentable_human_listing_count — RentAHuman public listing count via monthly direct GET (same etiquette as track_incumbents.py); secondary: human-task/manual-action slice of signal.x402_resources",
+        "threshold": "listings grow >= 10% in the window AND human-task x402 category count is nonzero (i.e., the segment reaches agent-commerce rails)",
+        "window_days": 30
+      },
+      "novelty_note": "existing_ideas includes vent_human_escalation_api, vent_realityrouter, and human-inference verification protocols (VENT_1786992636_*). All are build proposals for one side of the market. This hypothesis makes a claim ABOUT the market — liquidity keeps growing while the bottleneck migrates to verification — which tells us whether to build the escalation API at all or skip straight to the receipt layer.",
+      "status": "probation",
+      "generation": {
+        "source": "hermes_abduction_v1",
+        "evidence_digest": "runtime/evidence-digest.json",
+        "admitted_at": "2026-08-23T09:59:04.015991+00:00",
+        "gate": "adversarial-pass"
+      }
     }
   ]
 }
