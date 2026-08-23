@@ -124,3 +124,16 @@ safety violations; concurrent-append zero-loss; mutation score on critical gates
 false-promotion count over adversarial corpus; Hydra destroy/replay equivalence;
 resolved-forecast Brier skill vs baseline; induction holdout skill; H-branching
 decisions; repeat-usage lift vs unguided cohort.
+
+
+---
+
+# ADDENDUM 2026-08-23c — Edge-site lane LIVE
+
+Pipeline for human-facing sites (Astro + CF Pages functions):
+WorkOrder(artifact_type=site) -> worktree -> hermes builder ->
+verify-candidate.sh site gates (npm build + dist/index.html + discovery files)
+-> promote exact-SHA -> deploy-edge-site.sh (wrangler pages + fleet registration)
+-> sensors/conformance/usage automatic.
+Pilot: url_inspector_v2 replaces dead placeholder manifest.
+Rust CLIs attach per-product when measured need exists (dnc pattern).
