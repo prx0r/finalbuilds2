@@ -58,5 +58,11 @@
     "usage-telemetry"
   ],
   "language": "python",
-  "status": "live"
+  "status": "live",
+  "source_idea": "multi",
+  "hypothesis_parents": [
+    "H1_chatgpt_doomed",
+    "H2_agent_convenience",
+    "H3_subscriptions_dead"
+  ]
 }

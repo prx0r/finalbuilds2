@@ -68,5 +68,11 @@
     "opportunity": "Domain Finder + Live Buying",
     "rank": 5,
     "score": 87
-  }
+  },
+  "source_idea": "idea_domain_intelligence",
+  "hypothesis_parents": [
+    "H1_chatgpt_doomed",
+    "H2_agent_convenience",
+    "H7_micropay_arbitrage"
+  ]
 }

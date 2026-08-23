@@ -148,6 +148,33 @@
         "admitted_at": "2026-08-23T09:59:04.015991+00:00",
         "gate": "adversarial-pass"
       }
+    },
+    {
+      "id": "H7_micropay_arbitrage",
+      "statement": "Episodic-use subscription SaaS is attackable with free/one-shot agent-and-human-optimized unbundles: NO ACCOUNT, NO SUBSCRIPTION — do the job, leave. Value migrates from subscriptions to micropayments/usage; we arbitrage by finding incumbents whose pricing insults their usage frequency, recreating core features, and taking usage share.",
+      "parents": [
+        "H3_subscriptions_dead"
+      ],
+      "filter": {
+        "type": "scoring",
+        "mechanism": "ideas must name an incumbent with visible recurring pricing AND episodic usage (<=4x/year per typical user); UnbundleScore components recorded"
+      },
+      "predictions": [
+        {
+          "id": "H7P1",
+          "claim": "incumbents in our niches raise prices or add tier walls over 6 months while our free alternatives accumulate usage",
+          "metric": "signal.incumbent_price_min slope >0 AND platform usage.calls slope >0 for matched capability",
+          "window_days": 90
+        },
+        {
+          "id": "H7P2",
+          "claim": "agent-origin usage share of our unbundles exceeds that of same-category incumbent direct traffic within 6 months",
+          "metric": "usage agent-origin share",
+          "window_days": 180
+        }
+      ],
+      "status": "active",
+      "created_at": "2026-08-23"
     }
   ]
 }
