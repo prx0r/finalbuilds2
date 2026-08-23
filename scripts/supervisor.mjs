@@ -27,8 +27,9 @@ async function main() {
   if (!runIds.length) return;
 
   let boardText = '';
-  try { boardText = (await exec('hermes', ['kanban', '--board', BOARD, 'list'], { timeout: 30_000 })).stdout; } catch {}
+  try { boardText = (await exec('hermes', ['kanban', '--board', BOARD, 'list'], { timeout: 30_000 })).stdout; } catch { return; }
 
+  // ---- lane A: worktree BuildRuns (wq: pipeline) -> verify + promote --------
   for (const rid of runIds) {
     const dir = path.join(RUNS_DIR, rid);
     const statusFile = path.join(dir, 'run.json.status');

@@ -1,3 +1,8 @@
+# FinalBuilds2 — control plane for the autonomous software factory
+
+> **Operations manual (start here): docs/FACTORY-OPERATIONS.md**
+> Release-integrity rules: docs/BUILD-PLAN-2026-08-23-release-integrity.md
+
 # FinalBuilds2 — The Capability Foundry Control Plane
 
 > A working reference implementation of the FinalBuilds spine: an append-only, experiment-aware control plane that tracks the complete lineage of tiny agent-native products from idea-generation method through research/build/deployment to observed usage and controlled SEO/agent-discovery experiments.
