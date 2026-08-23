@@ -94,6 +94,7 @@ const body = [
   '- Modify ONLY your worktree. Acceptance files are frozen and hash-pinned.',
   '- Include real implementation files (py/rs/js/ts/go) — no README-only candidates.',
   '- Finish by committing all changes and reporting files changed + how to run.',
+  `- When done, call kanban_complete for this task. Verification is performed independently afterwards; do NOT claim success yourself.`,
 ].join('\n');
 await exec('hermes', ['kanban', '--board', BOARD, 'create',
   `[wq:${ideaId}] ${runId}`,
