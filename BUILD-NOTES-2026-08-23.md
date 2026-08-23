@@ -118,3 +118,14 @@ D3. Feed next WorkOrder batch (suites staged for top venture ideas)
 D4. findEntities pagination (>1024 entities breaking idea visibility)
 D5. Edge deploy script (wrangler pages from receipts) — after D3 volume proves demand
 NOT needed: more frameworks, more meta-tests, PyMC before data exists.
+
+## THESIS SCORECARD (2026-08-23 evening)
+demand-evidence: FORMING (signals daily; not yet decision-driving)
+cheap-MVP:       PROVEN (4 autonomous verified promotions)
+deploy:          PLATFORM AUTO · edge manual
+measure:         LIVE (usage middleware + fleet sensors + market signals)
+kill/scale:      PENDING (first windows close ~Sept 22)
+learn:           PENDING (needs #7)
+
+Verdict: scaffolding complete. From here the factory needs RUNTIME, not code.
+Next dev only on: broken things, usage middleware verification, slot feeding.
