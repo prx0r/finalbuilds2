@@ -1,6 +1,7 @@
 import { EntityType } from '../model/types.js';
 import { IdeaPlanner } from '../planner/idea-planner.js';
 import { randomId } from '../util/id.js';
+import fs from 'node:fs/promises';
 
 export class FactoryController {
   constructor({ graph, bus, dispatcher, minBuildScore = 12, maxBuilding = 2 }) {
@@ -17,7 +18,16 @@ export class FactoryController {
     const active = builds.filter(b => b.data?.status === 'running').length;
     // only live/completed builds exclude an idea — rejected/failed runs re-admit it
     const already = new Set(builds.filter(b => !['rejected', 'failed'].includes(b.data?.status)).map(b => b.data?.idea_id).filter(Boolean));
-    const candidates = ideas.filter(i => !already.has(i.id)).map(i => ({ id: i.id, name: i.name, scores: i.data?.scores ?? {}, data: i.data }));
+    // H1 filter (hypotheses/hypotheses.json): ideas must declare at least one
+    // chatgpt_limits class their core job depends on. Unaligned ideas are
+    // deprioritized (not blocked) until the registry catches up.
+    let limits = [];
+    try { limits = JSON.parse(await fs.readFile('/root/finalbuilds2/registry/chatgpt_limits.json', 'utf8')).classes.map(c => c.id); } catch {}
+    const candidates = ideas.filter(i => !already.has(i.id)).map(i => {
+      const parents = i.data?.hypothesis_parents ?? [];
+      const aligned = parents.length > 0 && parents.includes('H1_chatgpt_doomed') && (i.data?.limit_classes ?? []).some(c => limits.includes(c));
+      return { id: i.id, name: i.name, scores: i.data?.scores ?? {}, data: i.data, aligned };
+    }).sort((a, b) => Number(b.aligned) - Number(a.aligned));
     const selected = this.planner.select(candidates, { limit, activeCount: active, maxBuilding: this.maxBuilding });
     const dispatched = [];
     for (const idea of selected) {

@@ -97,3 +97,14 @@ much later: Merkle-chained event log (QDW ledger design), signed certificates
 system. Take its rubric, its pain-clustering, its ledger *design*, and its
 market-economics framing. Leave its infrastructure. The factory stays one
 system; QDW makes it smarter.
+
+## 6. Hypothesis layer (I2 follow-up, live 2026-08-23)
+- HYPOTHESIS.md = verbatim strategy message; hypotheses/hypotheses.json = schema v1
+- Three hypotheses seeded as Hydra nodes: H1_chatgpt_doomed (hard filter via
+  registry/chatgpt_limits.json), H2_agent_convenience + H3_subscriptions_dead
+  (scoring/shape rules); each carries falsifiable predictions w/ metrics+windows
+- Admission now sorts aligned-first (hypothesis_parents + limit_classes)
+- Canonical-JSON lesson recorded: Python ensure_ascii=False + compact separators
+  or Node hashes mismatch — the exact P2-10 trap, hit for real
+- Next: signals roll up under hypothesis parents; weekly status check
+  (playing_out / not_playing_out) drives resource allocation

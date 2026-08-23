@@ -1,0 +1,14 @@
+{
+  "schema": "chatgpt-cannot-do-well",
+  "version": 1,
+  "updated_at": "2026-08-23",
+  "note": "Capability classes ChatGPT-class chat CANNOT do well. An idea whose CORE JOB falls outside every class here fails H1 and is rejected at admission. Classes are conservative: chat must genuinely be bad at it, not merely worse than a dedicated tool.",
+  "classes": [
+    {"id": "live_data", "desc": "answers requiring current real-world state (prices, availability, weather, status)", "examples": ["domain availability right now", "current API pricing"]},
+    {"id": "deterministic_verification", "desc": "verifiable yes/no or exact-value computation where hallucination is fatal", "examples": ["policy/eligibility rules engines", "invoice arithmetic conflict detection", "breaking-change detection between schemas"]},
+    {"id": "file_scale_processing", "desc": "batch/large-file processing beyond context limits", "examples": ["100-page PDF extraction", "bulk CSV normalization"]},
+    {"id": "real_world_side_effects", "desc": "acting on external systems (register domains, send requests, write records)", "examples": ["RDAP lookups + registration flows", "webhook dispatch"]},
+    {"id": "persistence_time_series", "desc": "storing observations over time and diffing against history", "examples": ["price history tracking", "uptime monitoring"]},
+    {"id": "exact_format_output", "desc": "byte-exact structured outputs (valid OpenAPI, E.164 normalization) without schema enforcement", "examples": ["canonical JSON normalization"]}
+  ]
+}

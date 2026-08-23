@@ -1,0 +1,54 @@
+{
+  "schema": "finalbuilds-hypotheses",
+  "version": 1,
+  "updated_at": "2026-08-23",
+  "how_this_works": [
+    "Each hypothesis is falsifiable: it carries predictions with metrics and thresholds.",
+    "Signals (signal.* observations in Hydra) are assigned to a hypothesis parent.",
+    "Ideas declare hypothesis_parents; admission prefers aligned ideas and applies H1 as a hard filter via chatgpt_limits.json.",
+    "Periodically we compare each hypothesis' tracked series against its predictions -> status becomes playing_out / not_playing_out -> resources shift to playing hypotheses."
+  ],
+  "hypotheses": [
+    {
+      "id": "H1_chatgpt_doomed",
+      "statement": "Anything ChatGPT can do well is doomed as a separate product. Therefore maintain a list of things ChatGPT cannot do well; that list shrinks the problem space of what we build.",
+      "filter": {
+        "type": "hard",
+        "mechanism": "registry/chatgpt_limits.json capability classes; an idea whose core job falls outside every listed class is rejected at admission"
+      },
+      "predictions": [
+        {"id": "H1P1", "claim": "wrapper products whose core job is one good chat prompt plateau near zero recurring usage", "metric": "platform capability usage_30d", "threshold": "<=10 calls", "window_days": 30}
+      ],
+      "status": "active",
+      "created_at": "2026-08-23"
+    },
+    {
+      "id": "H2_agent_convenience",
+      "statement": "Build convenient tools for the agentic future such that it makes sense for agents to call them vs doing the work themselves — the tool must save tokens/time/effort or provide something chat lacks (live data, deterministic verification, persistence, side effects).",
+      "filter": {
+        "type": "scoring",
+        "mechanism": "rubric features verifiability + data_access + low_integration_cost reward agent-convenience; WorkOrder spec must state the token-saving or capability delta"
+      },
+      "predictions": [
+        {"id": "H2P1", "claim": "agent-facing endpoints (machine-discoverable, typed, cheap) get disproportionate usage vs human-only pages", "metric": "ratio api.calls : web visits per product", "threshold": ">=3:1", "window_days": 30},
+        {"id": "H2P2", "claim": "products exposing MCP tools see agent-origin traffic share grow over time", "metric": "share of mcp-tool-origin calls", "threshold": "monotonic increase over 90d"}
+      ],
+      "status": "active",
+      "created_at": "2026-08-23"
+    },
+    {
+      "id": "H3_subscriptions_dead",
+      "statement": "Subscription models are dead — most people treat them like one-off purchases anyway. Given near-free compute, remake subscription SaaS from scratch and offer it free to maximize usage (usage is the asset: data, distribution, agent-dependency).",
+      "filter": {
+        "type": "scoring",
+        "mechanism": "no auth/billing/subscription scaffolding in MVPs (already a Lane-A rule); incumbent_price signals justify unbundles; free serving cost must be ~0"
+      },
+      "predictions": [
+        {"id": "H3P1", "claim": "free-tier unbundles of paid incumbents reach usage parity with paid originals faster than paid clones would", "metric": "time-to-first-100-calls vs incumbent age", "window_days": 60},
+        {"id": "H3P2", "claim": "incumbent prices in our niches rise while our free equivalents gain usage (arbitrage window open)", "metric": "signal.incumbent_price_min slope > 0 AND platform usage slope > 0", "window_days": 90}
+      ],
+      "status": "active",
+      "created_at": "2026-08-23"
+    }
+  ]
+}

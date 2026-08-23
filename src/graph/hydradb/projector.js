@@ -188,6 +188,14 @@ export function projectEvent(event) {
       }));
       break;
 
+    case 'hypothesis.created':
+      stmts.push(createNode('Hypothesis', p.id, {
+        name: p.name || '',
+        statement: (p.statement || '').slice(0, 300),
+        status: p.status || 'active',
+      }));
+      break;
+
     case 'experiment.created':
       stmts.push(createNode('Experiment', p.id, {
         name: p.name || '',
