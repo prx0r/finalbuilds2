@@ -60,6 +60,17 @@ const readyUnassigned = boardText.split('\n')
 const readyAssigned = count(/●\s+t_\S+\s+(?!running)\S+\s+.*ready/) ; // assigned-but-not-started
 
 // ---------- 2. QUEUE: feed idle capacity ----------
+// FLOOR: never idle when work exists — if nothing running, force admission
+if (!runningTasks && !readyUnassigned.length) {
+  try {
+    const body = JSON.stringify({limit:1});
+    const r = await fetch('http://127.0.0.1:8787/v1/controller/tick',{
+      method:'POST', headers:{'Content-Type':'application/json', ...(token?{Authorization:`Bearer ${token}`}:{})}, body});
+    const j = await r.json().catch(()=>({}));
+    if (j.selected?.length) { await log(`FLOOR-TICK: admitted ${j.selected.map(s=>s.idea).join(',')}`); }
+  } catch (e) { await log(`floor-tick err: ${e.message.slice(0,60)}`); }
+}
+
 if (readyUnassigned.length && runningTasks < MAX_BUILDERS) {
   const tid = readyUnassigned[0];
   try {
