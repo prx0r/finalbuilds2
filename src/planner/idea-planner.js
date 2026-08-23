@@ -1,4 +1,8 @@
-import { scoreIdea } from './score.js';
+import { scoreIdea, alignmentBonus } from './score.js';
+
+const LIMIT_CLASSES = JSON.parse(await (await import('node:fs/promises'))
+  .readFile(new URL('../../registry/chatgpt_limits.json', import.meta.url), 'utf8'))
+  .classes.map(c => c.id);
 
 export class IdeaPlanner {
   constructor({ minBuildScore = 12 } = {}) {
@@ -7,7 +11,13 @@ export class IdeaPlanner {
 
   rank(ideas) {
     return ideas
-      .map(idea => ({ ...idea, evaluation: scoreIdea(idea.scores) }))
+      .map(idea => {
+        const evaluation = scoreIdea(idea.scores ?? idea.data?.scores, idea.data?.source);
+        const alignment = alignmentBonus(idea.data ?? {}, LIMIT_CLASSES);
+        // hypothesis layer bites here: aligned ideas outrank equally-scored peers
+        return { ...idea, evaluation: { ...evaluation, total: evaluation.total + alignment,
+                                        base_total: evaluation.total, alignment_bonus: alignment } };
+      })
       .sort((a, b) => b.evaluation.total - a.evaluation.total || a.id.localeCompare(b.id));
   }
 
