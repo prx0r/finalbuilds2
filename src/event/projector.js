@@ -27,7 +27,11 @@ export async function projectEvent(graph, event) {
     case 'build.started':
     case 'build.completed': {
       const status = event.type === 'build.completed' ? 'completed' : 'running';
-      await graph.upsertEntity({ id: p.id, type: EntityType.BUILD_RUN, name: p.name ?? p.id, data: { ...p, status, [`${status}_at`]: event.at } });
+      // Hydra caps queries ~1024B — store scalars only; full payload stays in the event log.
+      await graph.upsertEntity({
+        id: p.id, type: EntityType.BUILD_RUN, name: p.name ?? p.id,
+        data: { ...slim(p, ['id', 'name', 'idea_id', 'status', 'build_run_id', 'process_id']), status, [`${status}_at`]: event.at },
+      });
       if (p.idea_id) await graph.link(p.idea_id, RelKind.BUILT_BY, p.id, { at: event.at });
       break;
     }
@@ -94,7 +98,11 @@ export async function projectEvent(graph, event) {
       if (p.subject_id) await graph.link(p.subject_id, RelKind.FAILED_WITH, p.id, { at: event.at });
       break;
     case 'task.created':
-      await graph.upsertEntity({ id: p.id, type: EntityType.TASK, name: p.title, data: { ...p, created_at: event.at } });
+      // build_brief excluded — large document; lives in the event log only.
+      await graph.upsertEntity({
+        id: p.id, type: EntityType.TASK, name: p.title,
+        data: { ...slim(p, ['id', 'title', 'subject_id', 'kind', 'risk_class', 'status', 'build_run_id']), created_at: event.at },
+      });
       if (p.subject_id) await graph.link(p.subject_id, RelKind.TRIGGERED, p.id, { at: event.at });
       break;
     case 'process.registered':

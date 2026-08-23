@@ -2,6 +2,8 @@ import { createGraphStore } from '../graph/factory.js';
 import { JsonlEventStore } from '../event/jsonl-store.js';
 import { EventBus } from '../event/bus.js';
 import { JsonlTaskOutbox } from '../dispatch/outbox.js';
+import { RouterDispatcher } from '../dispatch/router-dispatcher.js';
+import { AgentBuildDispatcher } from '../dispatch/agentbuild-dispatcher.js';
 import { FactoryController } from './factory-controller.js';
 import { ExperimentEngine } from '../experiments/engine.js';
 import { StandardsCatalog } from '../standards/catalog.js';
@@ -17,7 +19,15 @@ export class ControlPlane {
   static fromEnv(env = process.env) {
     const graph = createGraphStore(env);
     const eventStore = new JsonlEventStore(env.EVENT_STORE_PATH ?? 'runtime/events.jsonl');
-    const dispatcher = new JsonlTaskOutbox(env.HERMES_OUTBOX_PATH ?? 'runtime/hermes-outbox.jsonl');
+    const outbox = new JsonlTaskOutbox(env.HERMES_OUTBOX_PATH ?? 'runtime/hermes-outbox.jsonl');
+    // product-build tasks execute through agentbuild/sandboxd when enabled;
+    // repairs and drift tasks always flow to the hermes outbox.
+    const dispatcher = new RouterDispatcher({
+      outboxDispatcher: outbox,
+      agentbuild: String(env.FACTORY_DISPATCHER ?? '').toLowerCase() === 'agentbuild'
+        ? new AgentBuildDispatcher({ root: env.FACTORY_ROOT ?? '.', mode: env.AGENTBUILD_MODE ?? 'direct' })
+        : null,
+    });
     const bus = new EventBus({ eventStore, graph, dispatcher });
     return new ControlPlane({
       graph,
