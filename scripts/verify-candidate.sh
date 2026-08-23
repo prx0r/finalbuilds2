@@ -13,7 +13,8 @@ set -u
 RUN_ID=${1:?usage: verify-candidate.sh <run_id>}
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 REPO="${FACTORY_REPO:-/root/unbundled}"
-RUN_DIR="$ROOT/runtime/build-runs/$RUN_ID"
+RUNS_ROOT="${FACTORY_RUNS_DIR:-$ROOT/runtime/build-runs}"
+RUN_DIR="$RUNS_ROOT/$RUN_ID"
 BRANCH="build/$RUN_ID"
 VERIFIER_VERSION="1.0.0"
 PYBIN=${VERIFY_PYTHON:-python3}
@@ -27,7 +28,7 @@ git -C "$REPO" rev-parse --verify -q "$BRANCH" >/dev/null || fail_err "branch mi
 IDEA_ID=$("$PYBIN" -c "import json;print(json.load(open('$RUN_DIR/run.json'))['idea_id'])")
 BASE_COMMIT=$("$PYBIN" -c "import json;print(json.load(open('$RUN_DIR/run.json'))['base_commit'])")
 SPEC_DIGEST=$("$PYBIN" -c "import json;print(json.load(open('$RUN_DIR/run.json'))['spec_digest'])")
-ACCEPT_DIR="$ROOT/acceptance/$IDEA_ID"
+ACCEPT_DIR="${FACTORY_ACCEPTANCE_DIR:-$ROOT/acceptance}/$IDEA_ID"
 [ -d "$ACCEPT_DIR" ] || fail_err "no frozen acceptance suite for idea $IDEA_ID"
 
 CLONE="$(mktemp -d /tmp/verify_${RUN_ID}.XXXXXX)"

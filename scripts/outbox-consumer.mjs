@@ -62,6 +62,7 @@ async function readJsonSafe(file, fallback) {
 async function main() {
   const state = await readJsonSafe(STATE, { consumed: [] });
   const consumed = new Set(state.consumed);
+  const openRepairs = await readJsonSafe(path.join(ROOT, 'runtime', 'open-repairs.json'), {});
   let lines = [];
   try { lines = (await fs.readFile(OUTBOX, 'utf8')).split('\n').filter(Boolean); } catch { lines = []; }
 
@@ -73,11 +74,30 @@ async function main() {
     try { task = JSON.parse(line); } catch { continue; }
     if (!task?.id || consumed.has(task.id)) continue;
 
+    // P3-12a: only genuine drift/repair tasks belong here. Product-build
+    // mirrors (workorder-created / dispatch-failed) are NOT repairs.
+    if (task.kind === 'product-build' || ['workorder-created', 'dispatch-failed'].includes(task.status)) {
+      consumed.add(task.id);
+      console.log(`${task.id}: skipped (${task.kind}/${task.status} — not a repair)`);
+      continue;
+    }
+
     const payload = task.payload ?? {};
     const siteId = payload.site_id ?? task.subject_id ?? 'unknown_site';
     const versionId = payload.standard_version_id ?? '';
     const obs = await latestObservations(siteId);
     const reqs = versionId ? await standardRequirements(versionId) : [];
+
+    // P3-13: dedup by condition — one OPEN repair per
+    // (site, standard, violation fingerprint).
+    const failedIds = (reqs ?? []).filter(r => r.severity !== 'info').map(r => r.id).sort().join(',');
+    const repairKey = crypto.createHash('sha256')
+      .update(`${siteId}|${versionId}|${failedIds}`).digest('hex').slice(0, 16);
+    if (openRepairs[repairKey]?.open) {
+      consumed.add(task.id);
+      console.log(`${task.id}: duplicate of open repair ${openRepairs[repairKey].task_id} (key ${repairKey}) — skipped`);
+      continue;
+    }
 
     const brief = [
       `# Repair task: ${task.title ?? task.id}`,
@@ -105,6 +125,7 @@ async function main() {
     await fs.writeFile(briefPath, brief);
 
     let executedBy = 'brief-only';
+    let dispatchedOk = true;
     if (REPAIR_CMD) {
       try {
         const { spawn } = await import('node:child_process');
@@ -116,12 +137,21 @@ async function main() {
         });
         executedBy = REPAIR_CMD;
       } catch (err) {
-        executedBy = `failed: ${String(err.message).slice(0, 80)}`;
+        // P3-12b: ACK only after downstream acceptance — a failed dispatch
+        // stays unconsumed and is retried next tick.
+        console.log(`${task.id}: RETRYABLE dispatch failure (${String(err.message).slice(0, 80)})`);
+        dispatchedOk = false;
       }
     }
 
-    // Record loop action in both graphs
+    if (!dispatchedOk) continue;
+
+    openRepairs[repairKey] = { task_id: task.id, opened_at: new Date().toISOString(), open: true };
+    await fs.writeFile(path.join(ROOT, 'runtime', 'open-repairs.json'), JSON.stringify(openRepairs, null, 2));
+
+    // Record loop action in the control plane (authenticated)
     const headers = { 'Content-Type': 'application/json' };
+    if (process.env.CONTROL_TOKEN) headers.Authorization = `Bearer ${process.env.CONTROL_TOKEN}`;
     await fetch(`${CONTROL_URL}/v1/observations`, {
       method: 'POST', headers,
       body: JSON.stringify({

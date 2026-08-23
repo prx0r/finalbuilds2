@@ -27,15 +27,17 @@ const fetchJson = async (url, headers = {}) => {
 };
 
 await check('control-plane', () => fetchJson('http://127.0.0.1:8787/healthz'));
-await check('hydra', async () => {
+await check('hydra-live-fresh', async () => {
   const url = `${process.env.HYDRA_URL || 'http://127.0.0.1:8443'}/v1/graphs/${process.env.HYDRA_GRAPH_ID || 'finalbuilds'}/query`;
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.HYDRA_TOKEN}`, 'Content-Type': 'application/json', 'X-Graph-Namespace': process.env.HYDRA_NAMESPACE || 'default' },
-    body: JSON.stringify({ cell_id: process.env.HYDRA_CELL_ID || 'cell-0', query: 'MATCH (n:Site) RETURN n.string_id AS id LIMIT 1' }),
-    signal: AbortSignal.timeout(5000),
-  });
+  const headers = { Authorization: `Bearer ${process.env.HYDRA_TOKEN}`, 'Content-Type': 'application/json', 'X-Graph-Namespace': process.env.HYDRA_NAMESPACE || 'default' };
+  const body = JSON.stringify({ cell_id: process.env.HYDRA_CELL_ID || 'cell-0', query: 'MATCH (n:Observation) RETURN n.recorded_at AS at ORDER BY n.recorded_at DESC LIMIT 1' });
+  const r = await fetch(url, { method: 'POST', headers, body, signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json();
+  const at = j?.rows?.[0]?.[0]?.value ?? j?.rows?.[0]?.[0];
+  if (!at) throw new Error('no observations in graph');
+  const ageMin = (Date.now() - new Date(at).getTime()) / 60000;
+  if (ageMin > 30) throw new Error(`stale graph: newest observation ${Math.round(ageMin)}min old (sensor write path dead?)`);
 });
 await check('provider-zen', async () => {
   const key = process.env.OPENCODE_GO_API_KEY;
