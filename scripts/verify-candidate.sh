@@ -50,7 +50,25 @@ if [ -d tests ]; then OWN_LOG="$(mktemp)"; "$PYBIN" -m pytest tests -q --tb=shor
 
 SRC_COUNT=$(find . -path ./.acceptance -prune -o -type f \( -name '*.py' -o -name '*.rs' -o -name '*.js' -o -name '*.ts' -o -name '*.go' \) -print | wc -l)
 
-if [ "$ACC_EXIT" -ne 0 ] || [ "${SRC_COUNT:-0}" -lt 1 ]; then RESULT="FAIL"; else RESULT="PASS"; fi
+# P4 artifact recipes: per-type truthfulness (no mandatory web/sqlite/mcp per type)
+ARTIFACT_TYPE=$("$PYBIN" -c "import json;print(json.load(open('$RUN_DIR/run.json')).get('artifact_type','cli'))")
+case "$ARTIFACT_TYPE" in
+  cli|library|benchmark)
+    # any source file + acceptance suite suffices; own-tests optional
+    TYPE_OK=1 ;;
+  web)
+    # needs a UI entrypoint; build check only if package.json present
+    [ -f index.html ] || [ -f package.json ] || [ -f src/App.tsx ] && TYPE_OK=1 || TYPE_OK=0 ;;
+  worker|api|mcp)
+    # needs an HTTP/worker entrypoint or handler module
+    ls *.py *.js *.ts >/dev/null 2>&1 && TYPE_OK=1 || { [ -d src ] || [ -d api ]; } && TYPE_OK=1 || TYPE_OK=0 ;;
+  wasm)
+    find . -name '*.rs' -o -name '*.wat' -o -name '*.wasm' | grep -q . && TYPE_OK=1 || TYPE_OK=0 ;;
+  *)
+    TYPE_OK=0 ;;
+esac
+
+if [ "$ACC_EXIT" -ne 0 ] || [ "${SRC_COUNT:-0}" -lt 1 ] || [ "${TYPE_OK:-0}" -ne 1 ]; then RESULT="FAIL"; else RESULT="PASS"; fi
 
 # --- receipt -------------------------------------------------------------------
 RESULT="$RESULT" RUN_DIR="$RUN_DIR" RUN_ID="$RUN_ID" BASE_COMMIT="$BASE_COMMIT" CANDIDATE_COMMIT="$CANDIDATE_COMMIT" \
@@ -67,6 +85,7 @@ checks = [
     {"id": "acceptance", "command": "pytest .acceptance -q", "exit_code": int(os.environ["ACC_EXIT"]), "stdout_digest": digest(os.environ["ACC_LOG"])},
     {"id": "own-tests", "command": "pytest tests -q", "exit_code": int(os.environ["OWN_EXIT"]), "stdout_digest": digest(os.environ["OWN_LOG"])},
     {"id": "real-implementation", "command": "find source files", "exit_code": 0 if int(os.environ["SRC_COUNT"]) >= 1 else 1, "stdout_digest": None},
+    {"id": "artifact-type-shape", "command": os.environ.get("ARTIFACT_TYPE","cli") + " shape check", "exit_code": int(os.environ.get("TYPE_OK","0")), "stdout_digest": None},
 ]
 receipt = {
     "run_id": os.environ["RUN_ID"],

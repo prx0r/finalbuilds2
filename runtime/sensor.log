@@ -1545,3 +1545,78 @@ site_onething standard_seo_core_v1 ok
 site_url_inspector standard_seo_core_v1 ok  
 
 conformance done: 3 non-compliant site/standard pairs
+site_cancelme http.status=0 128ms -> 201 projected
+site_cancelme unreachable: ENOTFOUND
+site_cancelme llms_txt.present=false -> 201
+site_cancelme robots_txt.present=false -> 201
+site_domainnamechecker http.status=200 139ms -> 201 projected
+site_domainnamechecker llms_txt.present=true -> 201
+site_domainnamechecker robots_txt.present=true -> 201
+site_domainnamechecker https://domainnamechecker.tradesprior.workers.dev/api/health -> 200 22ms (201)
+site_hackathonhelp http.status=200 125ms -> 201 projected
+site_hackathonhelp llms_txt.present=true -> 201
+site_hackathonhelp robots_txt.present=true -> 201
+site_llmdeals http.status=200 122ms -> 201 projected
+site_llmdeals llms_txt.present=true -> 201
+site_llmdeals robots_txt.present=true -> 201
+site_llmdeals https://llmdeals-v2.pages.dev/api/v1/top.json -> 200 30ms (201)
+site_llmdeals https://llmdeals-v2.pages.dev/api/v1/deals.json -> 200 28ms (201)
+site_llmdeals https://llmdeals-v2.pages.dev/api/v1/changes.json -> 200 28ms (201)
+site_onething http.status=0 2ms -> 201 projected
+site_onething unreachable: ENOTFOUND
+site_onething llms_txt.present=false -> 201
+site_onething robots_txt.present=false -> 201
+site_url_inspector http.status=0 19ms -> 201 projected
+site_url_inspector unreachable: ENOTFOUND
+site_url_inspector llms_txt.present=false -> 201
+site_url_inspector robots_txt.present=false -> 201
+sensor done: 22 observations recorded, 0 rejected
+site_cancelme standard_site_onboarding_v1 FAIL missing=agent-discovery-files
+site_domainnamechecker standard_seo_core_v1 ok  
+site_domainnamechecker standard_agent_discovery_v2 ok  
+site_hackathonhelp standard_agent_discovery_v2 ok  
+site_llmdeals standard_seo_core_v1 ok  
+site_llmdeals standard_agent_discovery_v2 ok  
+site_onething standard_agent_discovery_v2 FAIL missing=llms-txt
+site_onething standard_site_onboarding_v1 FAIL missing=agent-discovery-files
+site_onething standard_seo_core_v1 ok  
+site_url_inspector standard_seo_core_v1 ok  
+
+conformance done: 3 non-compliant site/standard pairs
+site_cancelme http.status=0 140ms -> 201 projected
+site_cancelme unreachable: ENOTFOUND
+site_cancelme llms_txt.present=false -> 201
+site_cancelme robots_txt.present=false -> 201
+site_domainnamechecker http.status=200 118ms -> 201 projected
+site_domainnamechecker llms_txt.present=true -> 201
+site_domainnamechecker robots_txt.present=true -> 201
+site_domainnamechecker https://domainnamechecker.tradesprior.workers.dev/api/health -> 200 21ms (201)
+site_hackathonhelp http.status=200 129ms -> 201 projected
+site_hackathonhelp llms_txt.present=true -> 201
+site_hackathonhelp robots_txt.present=true -> 201
+site_llmdeals http.status=200 109ms -> 201 projected
+site_llmdeals llms_txt.present=true -> 201
+site_llmdeals robots_txt.present=true -> 201
+site_llmdeals https://llmdeals-v2.pages.dev/api/v1/top.json -> 200 23ms (201)
+site_llmdeals https://llmdeals-v2.pages.dev/api/v1/deals.json -> 200 25ms (201)
+site_llmdeals https://llmdeals-v2.pages.dev/api/v1/changes.json -> 200 24ms (201)
+site_onething http.status=0 4ms -> 201 projected
+site_onething unreachable: ENOTFOUND
+site_onething llms_txt.present=false -> 201
+site_onething robots_txt.present=false -> 201
+site_url_inspector http.status=0 37ms -> 201 projected
+site_url_inspector unreachable: ENOTFOUND
+site_url_inspector llms_txt.present=false -> 201
+site_url_inspector robots_txt.present=false -> 201
+sensor done: 22 observations recorded, 0 rejected
+site_cancelme standard_site_onboarding_v1 FAIL missing=agent-discovery-files
+site_domainnamechecker standard_seo_core_v1 ok  
+site_domainnamechecker standard_agent_discovery_v2 ok  
+site_hackathonhelp standard_agent_discovery_v2 ok  
+site_llmdeals standard_seo_core_v1 ok  
+site_onething standard_agent_discovery_v2 FAIL missing=llms-txt
+site_onething standard_site_onboarding_v1 FAIL missing=agent-discovery-files
+site_onething standard_seo_core_v1 ok  
+site_url_inspector standard_seo_core_v1 ok  
+
+conformance done: 3 non-compliant site/standard pairs
