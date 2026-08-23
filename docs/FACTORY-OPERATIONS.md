@@ -27,6 +27,40 @@ IDEAS (unbundled/registry + finalbuilds2 graph)
   → deployed fleet observed by sensors → drift → repair WorkOrders → loop
 ```
 
+
+## Crontab (live — 2026-08-23)
+
+| Schedule | Job | Purpose |
+|---|---|---|
+| `* * * * *` | ram-guard.sh | RAM log + <500MB cleanup (this lane only) |
+| `*/5 * * * *` | platform keepalive | restart :8810 from REPO if healthz fails (env via platform.env) |
+| `*/10` | observe-sites.mjs | fleet uptime + discovery probes -> Hydra |
+| `5 * * * *` | cf-usage.mjs | Cloudflare api.calls/errors/cpu -> Hydra |
+| `5-59/10` | conformance.mjs | standards evaluation -> compliance obs |
+| `5-59/10` | outbox-consumer.mjs | drift -> repair briefs -> dispatch-repair.sh -> fleet board |
+| `*/15` | supervisor.mjs | Lane A verify/promote + Lane B post_build integration |
+| `*/15` | kanban dispatch --max 1 | feed queued tasks to builders |
+| `15 6 * * *` | collect_signals.py | x402/PyPI/npm/GitHub/HN/SE demand signals |
+| `20 7 * * *` | convergence-detector.mjs | evidence density -> ClusterCandidates |
+| `30 6 1 * *` | track_incumbents.py | incumbent price snapshots + Wayback backfill |
+
+## Two product lanes (canonical)
+
+**Lane A — verified worktree pipeline** (platform capability modules):
+tick -> create-build-run -> WorkOrder [wq:<idea>] -> hermes builder commits to
+branch -> supervisor verifies (Receipt v3) -> promote EXACT-SHA -> live on :8810.
+Standard acceptance suite generator: `/root/unbundled/scripts/prepare-suite.sh <idea_id>`.
+
+**Lane B — registry batch builds** ([idea_id] tasks):
+registry_to_kanban.py -> builder in scratch workspace -> on done, supervisor
+lane B runs post_build.sh v2 (integration + registry sync + Hydra provenance).
+Rule: builders never write the shared tree mid-build; integration happens once,
+at completion, gated by tests.
+
+**Edge lane** (human-facing sites): artifact_type=site WorkOrders; verify gates
+check npm build + dist/index.html + llms.txt/robots; deploy-edge-site.sh publishes
+to CF Pages + registers in fleet spine. Rust CLIs attach per-product when justified.
+
 ## 2. Machines, repos, credentials
 
 | Path | Role |
