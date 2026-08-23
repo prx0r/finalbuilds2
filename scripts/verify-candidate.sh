@@ -45,13 +45,17 @@ cd "$CLONE" || fail_err "cannot enter clone"
 
 # P0-2 containment: candidate code runs with a SCRUBBED environment — no
 # factory/CF/Hydra/git credentials are visible to anything pytest imports.
+VERIFY_TEST_TIMEOUT=${VERIFY_TEST_TIMEOUT:-180}
 run_pytest() { # <log> <target...>
   local log=$1; shift
-  env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$CLONE" LANG=C.UTF-8 \
+  timeout "$VERIFY_TEST_TIMEOUT" env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$CLONE" LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 TMPDIR="$CLONE/.tmp" \
     "$PYBIN" -m "$@" >"$log" 2>&1
 }
 mkdir -p "$CLONE/.tmp"
+# anti-gaming: candidate-owned pytest hook/config files must not influence the judge
+rm -f "$CLONE/conftest.py" "$CLONE/pytest.ini" "$CLONE/setup.cfg" "$CLONE/tox.ini"
+rm -rf "$CLONE/.pytest_cache"
 
 ACC_LOG="$(mktemp)"; run_pytest "$ACC_LOG" pytest .acceptance -q --tb=short; ACC_EXIT=$?
 tail -n 5 "$ACC_LOG" >&2

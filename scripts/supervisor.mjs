@@ -63,6 +63,36 @@ async function main() {
     if (verdict === 'VERIFIED') {
       try {
         await exec('bash', [path.join(ROOT, 'scripts', 'promote-candidate.sh'), rid], { timeout: 60_000 });
+        // Canonical event: graph must reflect reality the moment promotion lands.
+        try {
+          const run = JSON.parse(await fs.readFile(path.join(dir, 'run.json'), 'utf8'));
+          const receipt = JSON.parse(await fs.readFile(path.join(dir, 'receipt.json'), 'utf8'));
+          const crypto = await import('node:crypto');
+          await fetch(`${process.env.CONTROL_URL || 'http://127.0.0.1:8787'}/v1/events`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...(process.env.CONTROL_TOKEN ? { Authorization: `Bearer ${process.env.CONTROL_TOKEN}` } : {}) },
+            body: JSON.stringify({
+              event_id: `evt_build_completed_${rid}`,
+              event_type: 'build.completed',
+              schema_version: '1.0.0',
+              occurred_at: new Date().toISOString(),
+              recorded_at: new Date().toISOString(),
+              source: { system: 'foundry-supervisor', version: '1.0.0' },
+              subject: { type: 'build_run', id: rid },
+              context: {},
+              payload: {
+                id: rid, name: `BuildRun ${rid}`, idea_id: run.idea_id, status: 'completed',
+                candidate_commit: receipt.candidate_commit, artifact_digest: receipt.artifact_digest,
+                receipt_result: receipt.result,
+              },
+              integrity: { payload_sha256: crypto.createHash('sha256').update(JSON.stringify({
+                id: rid, name: `BuildRun ${rid}`, idea_id: run.idea_id, status: 'completed',
+                candidate_commit: receipt.candidate_commit, artifact_digest: receipt.artifact_digest,
+                receipt_result: receipt.result,
+              })).digest('hex'), previous_event_id: null },
+            }),
+          }).then(r => console.log(`${rid}: build.completed event -> ${r.status}`));
+        } catch (e) { console.error(`${rid}: event emission failed (promotion stands): ${String(e.message).slice(0, 80)}`); }
         console.log(`${rid}: PROMOTED`);
       } catch (e) { console.error(`${rid}: promote failed: ${String(e.message).slice(0, 120)}`); }
     } else {
