@@ -11,6 +11,7 @@ export async function projectEvent(graph, event) {
     case 'idea.generator.registered':
       await graph.upsertEntity({ id: p.id, type: EntityType.IDEA_GENERATOR, name: p.name, data: { ...p, registered_at: event.at } });
       break;
+    case 'idea.created':
     case 'idea.seeded':
       await graph.upsertEntity({ id: p.id, type: EntityType.IDEA, name: p.name, data: { ...p, seeded_at: event.at } });
       if (p.generator_id) await graph.link(p.generator_id, RelKind.GENERATED, p.id, { at: event.at });
