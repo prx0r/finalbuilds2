@@ -39,6 +39,13 @@ if (!idea) { console.error(`unknown idea: ${ideaId}`); process.exit(1); }
 const score = Object.values(idea.data?.scores ?? {}).reduce((a, b) => a + b, 0);
 if (!Number.isFinite(score) || score <= 0) { console.error(`idea ${ideaId} unscored — admission denied`); process.exit(1); }
 
+// Admission gate: no frozen acceptance suite -> no build (P5 invariant).
+const acceptDir = path.join(ROOT, 'acceptance', ideaId);
+try { await fs.access(acceptDir); } catch {
+  console.error(`no frozen acceptance suite at acceptance/${ideaId} — admission denied`);
+  process.exit(1);
+}
+
 // 2. Immutable run identity
 const runId = `run_${Date.now().toString(36)}_${crypto.randomBytes(3).toString('hex')}`;
 const branch = `build/${runId}`;

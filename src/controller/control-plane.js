@@ -4,6 +4,7 @@ import { EventBus } from '../event/bus.js';
 import { JsonlTaskOutbox } from '../dispatch/outbox.js';
 import { RouterDispatcher } from '../dispatch/router-dispatcher.js';
 import { AgentBuildDispatcher } from '../dispatch/agentbuild-dispatcher.js';
+import { WorkOrderDispatcher } from '../dispatch/workorder-dispatcher.js';
 import { FactoryController } from './factory-controller.js';
 import { ExperimentEngine } from '../experiments/engine.js';
 import { StandardsCatalog } from '../standards/catalog.js';
@@ -26,6 +27,9 @@ export class ControlPlane {
       outboxDispatcher: outbox,
       agentbuild: String(env.FACTORY_DISPATCHER ?? '').toLowerCase() === 'agentbuild'
         ? new AgentBuildDispatcher({ root: env.FACTORY_ROOT ?? '.', mode: env.AGENTBUILD_MODE ?? 'direct' })
+        : null,
+      workorder: String(env.FACTORY_DISPATCHER ?? '').toLowerCase() === 'workorder'
+        ? new WorkOrderDispatcher({ root: env.FACTORY_ROOT ?? '.', outboxDispatcher: outbox })
         : null,
     });
     const bus = new EventBus({ eventStore, graph, dispatcher });

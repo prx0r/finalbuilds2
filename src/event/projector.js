@@ -26,11 +26,12 @@ export async function projectEvent(graph, event) {
       break;
     case 'build.started':
     case 'build.completed': {
-      const status = event.type === 'build.completed' ? 'completed' : 'running';
+      // explicit payload.status wins (P2: truthful states); type-derived fallback.
+      const status = p.status ?? (event.type === 'build.completed' ? 'completed' : 'running');
       // Hydra caps queries ~1024B — store scalars only; full payload stays in the event log.
       await graph.upsertEntity({
         id: p.id, type: EntityType.BUILD_RUN, name: p.name ?? p.id,
-        data: { ...slim(p, ['id', 'name', 'idea_id', 'status', 'build_run_id', 'process_id']), status, [`${status}_at`]: event.at },
+        data: { ...slim(p, ['id', 'name', 'idea_id', 'status', 'build_run_id', 'process_id', 'rejected_reason']), status, [`${status}_at`]: event.at },
       });
       if (p.idea_id) await graph.link(p.idea_id, RelKind.BUILT_BY, p.id, { at: event.at });
       break;
