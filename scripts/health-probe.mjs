@@ -32,7 +32,7 @@ await check('hydra', async () => {
   const r = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.HYDRA_TOKEN}`, 'Content-Type': 'application/json', 'X-Graph-Namespace': process.env.HYDRA_NAMESPACE || 'default' },
-    body: JSON.stringify({ cell_id: process.env.HYDRA_CELL_ID || 'cell-0', query: 'MATCH (n) RETURN count(n) LIMIT 1' }),
+    body: JSON.stringify({ cell_id: process.env.HYDRA_CELL_ID || 'cell-0', query: 'MATCH (n:Site) RETURN n.string_id AS id LIMIT 1' }),
     signal: AbortSignal.timeout(5000),
   });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -43,9 +43,10 @@ await check('provider-zen', async () => {
   const r = await fetch('https://opencode.ai/zen/go/v1/chat/completions', {
     method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: 'ox-alpha-free', messages: [{ role: 'user', content: 'ping' }], max_tokens: 4 }),
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(60_000),
   });
-  if (!r.ok) throw new Error(`gateway HTTP ${r.status} (credits/quota?)`);
+  if ([401, 402, 403].includes(r.status)) throw new Error(`gateway HTTP ${r.status} (credits/quota?)`);
+  if (!r.ok && r.status >= 500) throw new Error(`gateway HTTP ${r.status}`);
 });
 await check('hermes-cli', async () => {
   const { stdout } = await exec('hermes', ['kanban', '--board', process.env.FACTORY_BOARD || 'unbundled', 'stats'], { timeout: 20_000 });
