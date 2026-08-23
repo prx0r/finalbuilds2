@@ -31,3 +31,5 @@ task_bafbaa01-993a-490e-ac04-fdc49f69f312: brief -> runtime/repairs/task_bafbaa0
 consumer done: 1 tasks processed
 consumer done: 0 tasks processed
 consumer done: 0 tasks processed
+task_cca54d40-d828-4037-9f53-d3780a6002ae: brief -> runtime/repairs/task_cca54d40-d828-4037-9f53-d3780a6002ae.md (/root/finalbuilds2/scripts/dispatch-repair.sh)
+consumer done: 1 tasks processed
