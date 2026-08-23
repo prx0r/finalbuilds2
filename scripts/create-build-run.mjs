@@ -24,8 +24,10 @@ const WORKTREES = process.env.FACTORY_WORKTREES || '/root/unbundled/worktrees';
 const RUNS_DIR = path.join(ROOT, 'runtime', 'build-runs');
 const BOARD = process.env.FACTORY_BOARD || 'unbundled';
 
-const [ideaId] = process.argv.slice(2);
-if (!ideaId) { console.error('usage: create-build-run.mjs <idea_id>'); process.exit(2); }
+const args = process.argv.slice(2);
+const ideaId = args[0];
+const importUrl = args[1]; // optional: --import mode, clones upstream into the worktree
+if (!ideaId) { console.error('usage: create-build-run.mjs <idea_id> [upstream_git_url]'); process.exit(2); }
 
 const sh = async (cmd, args, opts = {}) => (await exec(cmd, args, { timeout: 30_000, ...opts })).stdout.trim();
 
@@ -33,11 +35,19 @@ const sh = async (cmd, args, opts = {}) => (await exec(cmd, args, { timeout: 30_
 const { ControlPlane } = await import('../src/controller/control-plane.js');
 process.chdir(ROOT);
 const cp = ControlPlane.fromEnv();
-const ideas = await cp.graph.findEntities({ type: 'Idea' });
-const idea = ideas.find(i => i.id === ideaId);
+// Import mode bypasses idea-graph lookup: the upstream repo IS the spec.
+let idea, score = 1;
+if (importUrl) {
+  idea = { id: ideaId, name: ideaId.replace(/_/g, ' '), data: { problem: `Vendored import of ${importUrl}, aligned to platform conventions.` } };
+} else {
+  const ideas = await cp.graph.findEntities({ type: 'Idea' });
+  idea = ideas.find(i => i.id === ideaId);
+}
 if (!idea) { console.error(`unknown idea: ${ideaId}`); process.exit(1); }
-const score = Object.values(idea.data?.scores ?? {}).reduce((a, b) => a + b, 0);
-if (!Number.isFinite(score) || score <= 0) { console.error(`idea ${ideaId} unscored — admission denied`); process.exit(1); }
+if (!importUrl) {
+  score = Object.values(idea.data?.scores ?? {}).reduce((a, b) => a + b, 0);
+  if (!Number.isFinite(score) || score <= 0) { console.error(`idea ${ideaId} unscored — admission denied`); process.exit(1); }
+}
 
 // Admission gate: no frozen acceptance suite -> no build (P5 invariant).
 const acceptDir = path.join(ROOT, 'acceptance', ideaId);
@@ -57,6 +67,7 @@ const now = new Date().toISOString();
 const run = {
   run_id: runId,
   idea_id: ideaId,
+  import_url: importUrl ?? null,
   artifact_type: idea.data?.artifact_type ?? 'cli',
   status_history: [{ status: 'QUEUED', at: now }],
   base_commit: baseCommit,
@@ -82,11 +93,26 @@ await fs.writeFile(path.join(runDir, 'run.json'), JSON.stringify(run, null, 2));
 
 // 4. Worktree + candidate branch (isolation without docker)
 await sh('git', ['-C', REPO, 'worktree', 'add', '-b', branch, path.join(WORKTREES, runId), baseCommit]);
+
+// 4b. Import mode: vendor upstream snapshot into the worktree
+let upstreamInfo = '';
+if (importUrl) {
+  const tmp = `/tmp/import_${runId}`;
+  await sh('git', ['clone', '--depth', '1', importUrl, tmp], { timeout: 120_000 });
+  const sha = (await sh('git', ['-C', tmp, 'rev-parse', 'HEAD'])).slice(0, 12);
+  await exec('cp', ['-a', `${tmp}/.`, path.join(WORKTREES, runId, `platform/products/${ideaId}`)]);
+  await fs.rm(path.join(WORKTREES, runId, `platform/products/${ideaId}/.git`), { recursive: true, force: true });
+  
+  await sh('git', ['-C', path.join(WORKTREES, runId), 'add', '-A']);
+  await sh('git', ['-C', path.join(WORKTREES, runId), 'commit', '-qm', `import upstream ${importUrl}@${sha}`]);
+  upstreamInfo = ` (@${sha})`;
+  await fs.rm(tmp, { recursive: true, force: true });
+}
 await fs.appendFile(path.join(runDir, 'run.json.status'), JSON.stringify({ status: 'RUNNING', at: new Date().toISOString() }) + '\n');
 
 // 5. WorkOrder -> hermes kanban (execution substrate)
 const body = [
-  `BuildRun: ${runId} (artifact_type=${run.artifact_type})`,
+  `BuildRun: ${runId} (artifact_type=${run.artifact_type})${upstreamInfo}`,
   `WORKTREE: ${run.workspace}`,
   `BRANCH: ${branch} (commit EVERYTHING here; never touch main)`,
   '', '## SPEC', spec, '',
