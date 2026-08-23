@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Resolution v1 — immutable outcome record",
+  "type": "object",
+  "required": ["resolution_key","forecast_id","resolved_at","rule_version","status"],
+  "properties": {
+    "resolution_key": {"type":"string"},
+    "forecast_id": {"type":"string"},
+    "resolved_at": {"type":"string","format":"date-time"},
+    "rule_version": {"type":"string"},
+    "status": {"enum":["RESOLVED","AWAITING_DATA"]},
+    "outcome": {"type":["object","null"],
+      "properties":{
+        "actual":{"type":["number","null"]},
+        "brier":{"type":["number","null"]},
+        "log_score":{"type":["number","null"]},
+        "baseline_probability":{"type":["number","null"]},
+        "brier_skill":{"type":["number","null"]},
+        "reason":{"type":"string"}
+      }},
+    "notes": {"type":"string"}
+  }
+}

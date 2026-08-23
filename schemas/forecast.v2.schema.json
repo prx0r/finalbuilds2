@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Forecast v2 — atomic immutable quantitative prediction",
+  "type": "object",
+  "required": ["forecast_id","hypothesis_id","prediction_family","issued_at",
+               "window_start","window_end","target","forecast",
+               "resolution_rule_version","evidence_snapshot_hash","model_version"],
+  "additionalProperties": false,
+  "properties": {
+    "forecast_id": {"type":"string","pattern":"^fc_"},
+    "hypothesis_id": {"type":"string"},
+    "prediction_family": {"type":"string"},
+    "issued_at": {"type":"string","format":"date-time"},
+    "window_start": {"type":"string","format":"date-time"},
+    "window_end": {"type":"string","format":"date-time"},
+    "target": {
+      "type":"object",
+      "required":["metric"],
+      "properties":{
+        "metric":{"type":"string"},
+        "entity_id":{"type":["string","null"]},
+        "aggregation":{"enum":["point","7d","30d","90d"]}
+      }
+    },
+    "forecast": {
+      "oneOf":[
+        {"type":"object","required":["type"],"properties":{"type":{"const":"lognormal"},"median":{"type":"number"},"sigma":{"type":"number"}}},
+        {"type":"object","required":["type"],"properties":{"type":{"const":"beta"},"alpha":{"type":"number"},"beta":{"type":"number"}}},
+        {"type":"object","required":["type"],"properties":{"type":{"const":"point"},"value":{"type":"number"}}}
+      ]
+    },
+    "event_forecasts": {
+      "type":"array",
+      "items":{"type":"object","required":["event","probability"],
+               "properties":{"event":{"type":"string"},"probability":{"type":"number","minimum":0,"maximum":1}}}
+    },
+    "resolution_rule_version": {"type":"string"},
+    "evidence_snapshot_hash": {"type":"string"},
+    "model_version": {"type":"string"}
+  }
+}
