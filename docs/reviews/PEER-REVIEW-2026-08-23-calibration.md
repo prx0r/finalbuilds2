@@ -159,3 +159,19 @@ Stop asking *"which hypothesis won the most predictions?"* Start asking *"what q
 This makes finalbuilds2 an **autonomous Bayesian product laboratory**. The existing deterministic factory, isolated BuildRuns, frozen verification and Hydra provenance are unusually well suited. Next push = **measurement integrity**, not modelling complexity.
 EOF
 wc -l docs/reviews/PEER-REVIEW-2026-08-23-calibration.md
+---
+## EXECUTION STATUS (2026-08-23, same day)
+
+| Order item | State |
+|---|---|
+| 1. Disable hypothesis-driven allocation | ✅ cron removed; engine retired to `legacy/calibration-engine.mjs.instrumented` |
+| 2. forecast.v2 schema | ✅ `schemas/forecast.v2.schema.json` (immutable, full window/target/distribution/rule fields) + resolution.v1 |
+| 3. Idempotent resolver | ✅ `scripts/resolve-forecasts.mjs` — resolution_key sha256(forecast_id+window_end+rule); rerun = zero change (test-proven) |
+| 4. Five predictions implemented | partial — H3P2 clause A (price slope, exact window) live; usage clauses AWAITING_DATA(usage_middleware), explicitly labeled not silently passed |
+| 5. Fake Brier deleted | ✅ retired with engine; real Brier/log/skill computed at resolution only (once data exists) |
+| 6. Synthetic tests | ✅ double-run idempotency green; per-rule outcome fixtures land with FORECASTS_DIR isolation next |
+| 7. modeling/ PyMC package | queued (next session; box RAM budget respected) |
+| 8–12. hierarchical model → checks → LOO → admission → EIG | blocked behind #7 + usage middleware |
+
+**Honest current measurement capacity: H3P2 clause A only. Everything else
+explicitly AWAITING_DATA — no silent passes anywhere.**
