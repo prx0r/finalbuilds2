@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { randomId } from '../util/id.js';
 import { nowIso } from '../util/time.js';
@@ -22,19 +23,36 @@ export class JsonlEventStore {
     // this file. O_APPEND alone tore a line under concurrency (2026-08-23), so
     // serialize appends with a spin lock. Lock is stale-safe: breaks after 5s.
     const lockPath = this.filePath + '.lock';
+    const nonce = `${process.pid}-${crypto.randomUUID()}`;
     const deadline = Date.now() + 5000;
     while (true) {
-      try { await fs.mkdir(lockPath); break; }
-      catch (e) {
+      try {
+        await fs.mkdir(lockPath);
+        await fs.writeFile(path.join(lockPath,'owner'), nonce, 'utf8'); // ownership record
+        break;
+      } catch (e) {
         if (e.code !== 'EEXIST') throw e;
-        if (Date.now() > deadline) { await fs.rm(lockPath, { recursive: true, force: true }); continue; }
+        // steal only if stale (>5s) AND we can replace the owner file atomically
+        let ownerMtime = 0;
+        try { ownerMtime = (await fs.stat(path.join(lockPath,'owner'))).mtimeMs; }
+        catch { /* no owner file yet */ }
+        if (Date.now() - ownerMtime > 5000) {
+          try {
+            await fs.rm(lockPath, { recursive: true, force: true });
+            continue; // retry acquire immediately
+          } catch { /* someone else is managing it */ }
+        }
         await new Promise(r => setTimeout(r, 25));
       }
     }
     try {
       await fs.appendFile(this.filePath, `${JSON.stringify(event)}\n`, 'utf8');
     } finally {
-      await fs.rm(lockPath, { recursive: true, force: true });
+      // release only if WE still own it (nonce match)
+      try {
+        const owner = await fs.readFile(path.join(lockPath,'owner'),'utf8');
+        if (owner === nonce) await fs.rm(lockPath, { recursive: true, force: true });
+      } catch { /* already released */ }
     }
     return event;
   }
@@ -65,19 +83,36 @@ export class JsonlEventStore {
     // this file. O_APPEND alone tore a line under concurrency (2026-08-23), so
     // serialize appends with a spin lock. Lock is stale-safe: breaks after 5s.
     const lockPath = this.filePath + '.lock';
+    const nonce = `${process.pid}-${crypto.randomUUID()}`;
     const deadline = Date.now() + 5000;
     while (true) {
-      try { await fs.mkdir(lockPath); break; }
-      catch (e) {
+      try {
+        await fs.mkdir(lockPath);
+        await fs.writeFile(path.join(lockPath,'owner'), nonce, 'utf8'); // ownership record
+        break;
+      } catch (e) {
         if (e.code !== 'EEXIST') throw e;
-        if (Date.now() > deadline) { await fs.rm(lockPath, { recursive: true, force: true }); continue; }
+        // steal only if stale (>5s) AND we can replace the owner file atomically
+        let ownerMtime = 0;
+        try { ownerMtime = (await fs.stat(path.join(lockPath,'owner'))).mtimeMs; }
+        catch { /* no owner file yet */ }
+        if (Date.now() - ownerMtime > 5000) {
+          try {
+            await fs.rm(lockPath, { recursive: true, force: true });
+            continue; // retry acquire immediately
+          } catch { /* someone else is managing it */ }
+        }
         await new Promise(r => setTimeout(r, 25));
       }
     }
     try {
       await fs.appendFile(this.filePath, `${JSON.stringify(event)}\n`, 'utf8');
     } finally {
-      await fs.rm(lockPath, { recursive: true, force: true });
+      // release only if WE still own it (nonce match)
+      try {
+        const owner = await fs.readFile(path.join(lockPath,'owner'),'utf8');
+        if (owner === nonce) await fs.rm(lockPath, { recursive: true, force: true });
+      } catch { /* already released */ }
     }
     return event;
   }

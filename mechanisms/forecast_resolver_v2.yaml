@@ -1,0 +1,41 @@
+# MechanismSpec — forecast_resolver_v2
+mechanism_id: forecast_resolver_v2
+claim: >
+  Closed forecasts resolve exactly once when sufficient valid observations
+  exist inside their window; missing data never becomes PASS or FAIL and
+  never permanently blocks later resolution.
+safety_invariants:
+  - an immutable forecast is never modified after issue
+  - RESOLVED exists at most once per (forecast_id, rule_version)
+  - observations outside [window_start, window_end] never influence resolution
+  - missing/insufficient data yields AWAITING_DATA, never PASS or FAIL
+  - every resolution references the evidence it used via snapshot hash
+liveness_invariants:
+  - AWAITING_DATA can become RESOLVED once required data exists
+  - transient store failure cannot permanently strand a forecast
+  - repeated resolver executions converge to identical final state
+oracle:
+  type: deterministic_reference_model
+failure_model:
+  - duplicate observations
+  - late observations arriving after resolution
+  - out-of-order observations
+  - malformed observation payloads
+  - Hydra timeout during series fetch
+  - process death between append and ack
+  - resolver invoked concurrently
+  - resolution-rule version change mid-window
+efficacy_claim: >
+  Forecast-based resolution produces better-calibrated hypothesis evidence
+  than calibration-engine-v0 binary/latest-value evaluation.
+baseline: calibration-engine-v0
+primary_metric: resolution_correctness
+secondary_metrics:
+  - false_resolution_rate
+  - duplicate_resolution_rate
+  - recovery_rate_after_data_available
+  - latency_from_data_available_to_resolved
+evidence_ladder:
+  code_status: UNIT_VERIFIED
+  evidence_status: PROPOSED
+  authority: shadow_only
