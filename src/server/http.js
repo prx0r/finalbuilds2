@@ -19,7 +19,10 @@ async function readJson(req, maxBytes = 1_000_000) {
     chunks.push(chunk);
   }
   if (!chunks.length) return {};
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  const raw = Buffer.concat(chunks).toString('utf8');
+  if (process.env.DEBUG_READJSON) console.error('[readJson]', req.url, 'len=', raw.length, 'head=', JSON.stringify(raw.slice(0, 70)));
+  try { return JSON.parse(raw); }
+  catch (e) { if (process.env.DEBUG_READJSON) console.error('[readJson] RAW DUMP:', JSON.stringify(raw)); throw e; }
 }
 
 function send(res, status, body) {

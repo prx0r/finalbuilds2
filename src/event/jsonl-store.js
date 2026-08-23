@@ -18,7 +18,24 @@ export class JsonlEventStore {
       meta: structuredClone(meta)
     };
     await fs.mkdir(path.dirname(this.filePath), { recursive: true });
-    await fs.appendFile(this.filePath, `${JSON.stringify(event)}\n`, 'utf8');
+    // Cross-process tear guard: multiple writers (server + crons + scripts) share
+    // this file. O_APPEND alone tore a line under concurrency (2026-08-23), so
+    // serialize appends with a spin lock. Lock is stale-safe: breaks after 5s.
+    const lockPath = this.filePath + '.lock';
+    const deadline = Date.now() + 5000;
+    while (true) {
+      try { await fs.mkdir(lockPath); break; }
+      catch (e) {
+        if (e.code !== 'EEXIST') throw e;
+        if (Date.now() > deadline) { await fs.rm(lockPath, { recursive: true, force: true }); continue; }
+        await new Promise(r => setTimeout(r, 25));
+      }
+    }
+    try {
+      await fs.appendFile(this.filePath, `${JSON.stringify(event)}\n`, 'utf8');
+    } finally {
+      await fs.rm(lockPath, { recursive: true, force: true });
+    }
     return event;
   }
 
@@ -44,7 +61,24 @@ export class JsonlEventStore {
 
   async appendEnvelope(event) {
     await fs.mkdir(path.dirname(this.filePath), { recursive: true });
-    await fs.appendFile(this.filePath, `${JSON.stringify(event)}\n`, 'utf8');
+    // Cross-process tear guard: multiple writers (server + crons + scripts) share
+    // this file. O_APPEND alone tore a line under concurrency (2026-08-23), so
+    // serialize appends with a spin lock. Lock is stale-safe: breaks after 5s.
+    const lockPath = this.filePath + '.lock';
+    const deadline = Date.now() + 5000;
+    while (true) {
+      try { await fs.mkdir(lockPath); break; }
+      catch (e) {
+        if (e.code !== 'EEXIST') throw e;
+        if (Date.now() > deadline) { await fs.rm(lockPath, { recursive: true, force: true }); continue; }
+        await new Promise(r => setTimeout(r, 25));
+      }
+    }
+    try {
+      await fs.appendFile(this.filePath, `${JSON.stringify(event)}\n`, 'utf8');
+    } finally {
+      await fs.rm(lockPath, { recursive: true, force: true });
+    }
     return event;
   }
 }
