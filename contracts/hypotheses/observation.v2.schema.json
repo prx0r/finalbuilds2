@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finalbuilds.local/contracts/hypotheses/observation.v2.schema.json",
+  "title": "ObservationV2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation_id",
+    "metric",
+    "entity_id",
+    "value",
+    "observed_at",
+    "source_id",
+    "quality",
+    "provenance_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "observation.v2"
+    },
+    "observation_id": {
+      "type": "string",
+      "pattern": "^obs_[A-Za-z0-9_\\-]+$"
+    },
+    "metric": {
+      "type": "string"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_id": {
+      "type": "string"
+    },
+    "dimensions": {
+      "type": "object"
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "valid"
+      ],
+      "properties": {
+        "valid": {
+          "type": "boolean"
+        },
+        "missing": {
+          "type": "boolean",
+          "default": false
+        },
+        "censored": {
+          "type": "boolean",
+          "default": false
+        },
+        "measurement_error_sd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "provenance_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

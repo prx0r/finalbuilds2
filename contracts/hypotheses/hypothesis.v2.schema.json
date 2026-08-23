@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finalbuilds.local/contracts/hypotheses/hypothesis.v2.schema.json",
+  "title": "HypothesisV2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "hypothesis_id",
+    "version",
+    "statement",
+    "mechanism",
+    "status",
+    "target_parameters",
+    "research_program",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "hypothesis.v2"
+    },
+    "hypothesis_id": {
+      "type": "string",
+      "pattern": "^H[0-9A-Za-z_\\-]+$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 20
+    },
+    "mechanism": {
+      "type": "string",
+      "minLength": 20
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "probation",
+        "active",
+        "promoted",
+        "demoted",
+        "retired"
+      ]
+    },
+    "parent_hypothesis_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "supersedes_hypothesis_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "population": {
+          "type": "string"
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "target_parameters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "parameter_id",
+          "outcome_metric",
+          "predictor",
+          "expected_direction"
+        ],
+        "properties": {
+          "parameter_id": {
+            "type": "string"
+          },
+          "outcome_metric": {
+            "type": "string"
+          },
+          "predictor": {
+            "type": "string"
+          },
+          "expected_direction": {
+            "enum": [
+              "positive",
+              "negative",
+              "nonzero",
+              "ordered"
+            ]
+          },
+          "minimum_effect": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "research_program": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "questions",
+        "search_domains"
+      ],
+      "properties": {
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "search_domains": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "spawn_policy": {
+          "enum": [
+            "manual",
+            "evidence_gap",
+            "failed_prediction",
+            "frontier_update",
+            "any"
+          ]
+        }
+      }
+    },
+    "fitness_policy_id": {
+      "type": "string",
+      "default": "hypothesis_fitness_v1"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

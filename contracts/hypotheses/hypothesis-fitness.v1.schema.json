@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finalbuilds.local/contracts/hypotheses/hypothesis-fitness.v1.schema.json",
+  "title": "HypothesisFitnessV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "fitness_id",
+    "hypothesis_id",
+    "evaluated_at",
+    "evidence_counts",
+    "predictive",
+    "parameter_evidence",
+    "decision"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "hypothesis_fitness.v1"
+    },
+    "fitness_id": {
+      "type": "string",
+      "pattern": "^hf_[A-Za-z0-9_\\-]+$"
+    },
+    "hypothesis_id": {
+      "type": "string"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resolved_forecasts",
+        "independent_entities"
+      ],
+      "properties": {
+        "resolved_forecasts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "independent_entities": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "predictive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill_vs_baseline_mean",
+        "prequential_log_score_delta"
+      ],
+      "properties": {
+        "skill_vs_baseline_mean": {
+          "type": "number"
+        },
+        "prequential_log_score_delta": {
+          "type": "number"
+        },
+        "calibration_error": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "parameter_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "parameter_id",
+          "posterior_mean",
+          "p_expected_direction"
+        ],
+        "properties": {
+          "parameter_id": {
+            "type": "string"
+          },
+          "posterior_mean": {
+            "type": "number"
+          },
+          "hdi_low": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "hdi_high": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "p_expected_direction": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "complexity_penalty": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "information_gain_bits": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "reason"
+      ],
+      "properties": {
+        "action": {
+          "enum": [
+            "insufficient_evidence",
+            "keep_probation",
+            "promote",
+            "branch",
+            "demote",
+            "retire"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

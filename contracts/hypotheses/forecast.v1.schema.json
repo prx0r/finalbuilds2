@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finalbuilds.local/contracts/hypotheses/forecast.v1.schema.json",
+  "title": "ForecastV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "forecast_id",
+    "hypothesis_id",
+    "issued_at",
+    "window_start",
+    "window_end",
+    "target",
+    "predictive_distribution",
+    "resolution_rule_version",
+    "evidence_snapshot_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "forecast.v1"
+    },
+    "forecast_id": {
+      "type": "string",
+      "pattern": "^fc_[A-Za-z0-9_\\-]+$"
+    },
+    "hypothesis_id": {
+      "type": "string"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric",
+        "entity_id",
+        "aggregation"
+      ],
+      "properties": {
+        "metric": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "aggregation": {
+          "type": "string"
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "predictive_distribution": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family",
+            "probability",
+            "event"
+          ],
+          "properties": {
+            "family": {
+              "const": "bernoulli"
+            },
+            "event": {
+              "type": "string"
+            },
+            "probability": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family",
+            "mean",
+            "sd"
+          ],
+          "properties": {
+            "family": {
+              "enum": [
+                "normal",
+                "lognormal"
+              ]
+            },
+            "mean": {
+              "type": "number"
+            },
+            "sd": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family",
+            "mean",
+            "dispersion"
+          ],
+          "properties": {
+            "family": {
+              "const": "negative_binomial"
+            },
+            "mean": {
+              "type": "number",
+              "minimum": 0
+            },
+            "dispersion": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "baseline_forecast_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolution_rule_version": {
+      "type": "string"
+    },
+    "evidence_snapshot_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "model_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

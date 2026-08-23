@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finalbuilds.local/contracts/hypotheses/resolution.v1.schema.json",
+  "title": "ResolutionV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "resolution_id",
+    "resolution_key",
+    "forecast_id",
+    "resolved_at",
+    "rule_version",
+    "outcome",
+    "scores",
+    "observation_ids"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "resolution.v1"
+    },
+    "resolution_id": {
+      "type": "string",
+      "pattern": "^resol_[A-Za-z0-9_\\-]+$"
+    },
+    "resolution_key": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "forecast_id": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "rule_version": {
+      "type": "string"
+    },
+    "outcome": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "const": "binary"
+            },
+            "value": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "const": "continuous"
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "brier": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "log_score": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "crps": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "skill_vs_baseline": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "observation_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finalbuilds.local/contracts/hypotheses/evidence-claim.v1.schema.json",
+  "title": "EvidenceClaimV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "claim_id",
+    "claim",
+    "source",
+    "extracted_at",
+    "provenance_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "evidence_claim.v1"
+    },
+    "claim_id": {
+      "type": "string",
+      "pattern": "^claim_[A-Za-z0-9_\\-]+$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 10
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_type",
+        "locator"
+      ],
+      "properties": {
+        "source_type": {
+          "enum": [
+            "paper",
+            "report",
+            "dataset",
+            "sensor",
+            "experiment",
+            "product_observation"
+          ]
+        },
+        "locator": {
+          "type": "string"
+        },
+        "published_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "accessed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "quantities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "uncertainty": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "population": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "supports_hypothesis_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "challenges_hypothesis_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "extracted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

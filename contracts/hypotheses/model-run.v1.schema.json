@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finalbuilds.local/contracts/hypotheses/model-run.v1.schema.json",
+  "title": "ModelRunV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "model_run_id",
+    "model_name",
+    "model_version",
+    "data_snapshot_hash",
+    "fit_at",
+    "diagnostics",
+    "predictive_validation",
+    "artifact_refs"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "model_run.v1"
+    },
+    "model_run_id": {
+      "type": "string",
+      "pattern": "^mr_[A-Za-z0-9_\\-]+$"
+    },
+    "model_name": {
+      "type": "string"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "data_snapshot_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "fit_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rhat_max",
+        "ess_bulk_min",
+        "divergences"
+      ],
+      "properties": {
+        "rhat_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ess_bulk_min": {
+          "type": "number",
+          "minimum": 0
+        },
+        "divergences": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sbc_passed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "predictive_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "score"
+      ],
+      "properties": {
+        "method": {
+          "enum": [
+            "prequential",
+            "time_split",
+            "psis_loo",
+            "kfold"
+          ]
+        },
+        "score": {
+          "type": "number"
+        },
+        "baseline_score": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "delta": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "se": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "pareto_k_max": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "posterior_summaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "parameter",
+          "mean",
+          "sd"
+        ],
+        "properties": {
+          "parameter": {
+            "type": "string"
+          },
+          "mean": {
+            "type": "number"
+          },
+          "sd": {
+            "type": "number",
+            "minimum": 0
+          },
+          "hdi_low": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "hdi_high": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "p_direction": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
