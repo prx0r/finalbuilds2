@@ -88,3 +88,39 @@ ontology/new ideas until P0 complete.
 Unattended fixture proving IDEA→…→HEALTHY, then break-the-deployed-thing repair
 loop, then adversarial matrix (unverified/moved/malicious/retry/outage cases).
 Do not claim "closed autonomous factory" until proven end-to-end.
+
+
+---
+
+# ADDENDUM 2026-08-23b — Verification Science phase (peer review accepted)
+
+Status: S1-S9 canonical spec live; measurement-integrity push executed (resolver
+v2, Forecast v2 validation, lock ownership nonce, verify-all unified). The
+current green suite does NOT yet cover interaction-level failures — the next
+phase is the verification science harness, not features.
+
+## Priority order (accepted verbatim)
+P0 measurement correctness: RESOLVED for resolver/schema/snapshot/baseline items
+(see docs/reviews/PEER-REVIEW-2026-08-23b-verification-science.md execution table);
+remaining: usage middleware -> first genuine resolutions.
+P1 fast-check executable S1-S9 model, 1000+ sequences/nightly.
+P2 concurrency+crash torture on JSONL/outbox/supervisor/promoter locks.
+P3 Stryker mutation testing on trust boundary only.
+P4 usage middleware as Observation producer -> resolve first real forecasts.
+P5 boring hierarchical Bayesian model (PyMC), shadow-only.
+P6 hypothesis-induction benchmark vs generic/random baselines.
+P7 AgentSEOLab/Cogym via shared ExperimentReceipts (no direct belief mutation).
+P8 autonomous experiment allocation after demonstrated predictive skill.
+
+## Mechanism evidence ladder (binding)
+PROPOSED -> SPECIFIED -> UNIT_VERIFIED -> STATE_VERIFIED -> ADVERSARIAL_VERIFIED
+-> EFFICACY_CONFIRMED -> REPLICATED -> PRODUCTION_AUTHORITY; any -> INVALIDATED;
+REPLICATED -> STALE. Sub-EFFICACY_CONFIRMED mechanisms are shadow_only and must
+not gate autonomous decisions. Registry: mechanisms/README.md.
+
+## Milestone target
+A Factory Scientific Scorecard report: generated-transition counts with zero
+safety violations; concurrent-append zero-loss; mutation score on critical gates;
+false-promotion count over adversarial corpus; Hydra destroy/replay equivalence;
+resolved-forecast Brier skill vs baseline; induction holdout skill; H-branching
+decisions; repeat-usage lift vs unguided cohort.
