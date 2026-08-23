@@ -1,0 +1,32 @@
+{
+  "run_id": "run_test",
+  "base_commit": "43eed76494e924e1af4e838d40019f2ebda9ee9b",
+  "candidate_commit": "d28e60f86b6f9e15593f81dfdfa56c07ba4efe14",
+  "spec_digest": "d4f02eaafd1a9e9de7d10972ca8e47fa7a985825c3c9c1e249c72683cb3e4f19",
+  "acceptance_digest": "2f32cfe82dc8379fa4be80308aba7b446a290f6f001597e89a49fce75429f491",
+  "artifact_digest": "d28e60f86b6f9e15593f81dfdfa56c07ba4efe14",
+  "checks": [
+    {
+      "id": "acceptance",
+      "command": "pytest .acceptance -q",
+      "exit_code": 0,
+      "stdout_digest": "0a97b591ab7ce9644866a9aea8e19c37ff6647585418c546d0481e0cb92bfbc7"
+    },
+    {
+      "id": "own-tests",
+      "command": "pytest tests -q",
+      "exit_code": -1,
+      "stdout_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "real-implementation",
+      "command": "find source files",
+      "exit_code": 0,
+      "stdout_digest": null
+    }
+  ],
+  "verifier_version": "1.0.0",
+  "started_at": "2026-08-23T03:00:41.367168+00:00",
+  "finished_at": "2026-08-23T03:00:41.367168+00:00",
+  "result": "PASS"
+}
