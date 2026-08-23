@@ -68,6 +68,19 @@ SRC_COUNT=$(find . -path ./.acceptance -prune -o -type f \( -name '*.py' -o -nam
 # P4 artifact recipes: per-type truthfulness (no mandatory web/sqlite/mcp per type)
 ARTIFACT_TYPE=$("$PYBIN" -c "import json;print(json.load(open('$RUN_DIR/run.json')).get('artifact_type','cli'))")
 case "$ARTIFACT_TYPE" in
+  site|webapp)
+    # EDGE SITE SHAPE (Astro/static): builds cleanly + emits browsable output
+    if [ -f package.json ]; then
+      npm install --no-audit --no-fund >"$CLONE/.build.log" 2>&1
+      BUILD_EXIT=$?
+      npm run build >>"$CLONE/.build.log" 2>&1 || npm run build:prod >>"$CLONE/.build.log" 2>&1
+      BUILD_EXIT=$?
+      [ $BUILD_EXIT -ne 0 ] && { echo "site build failed"; BUILD_FAIL=1; }
+      DIST_DIR=""
+      for d in dist build out public .; do [ -f "$CLONE/$d/index.html" ] && DIST_DIR="$d" && break; done
+      if [ -z "$DIST_DIR" ]; then echo "no index.html emitted"; BUILD_FAIL=1; fi
+    fi
+    TYPE_OK=$([ "${BUILD_FAIL:-0}" = "0" ] && echo 1 || echo 0) ;;
   cli|library|benchmark)
     # any source file + acceptance suite suffices; own-tests optional
     TYPE_OK=1 ;;
