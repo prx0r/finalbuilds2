@@ -70,9 +70,17 @@ esac
 
 if [ "$ACC_EXIT" -ne 0 ] || [ "${SRC_COUNT:-0}" -lt 1 ] || [ "${TYPE_OK:-0}" -ne 1 ]; then RESULT="FAIL"; else RESULT="PASS"; fi
 
-# --- receipt -------------------------------------------------------------------
+# --- VerificationReceipt v3 (P0-3): gate map, missing evidence = ERROR --------
+# candidate_tests_ok is REQUIRED for code artifact classes — a PASS without
+# the candidate's own tests is the exact false-pass regression this closes.
+case "$ARTIFACT_TYPE" in
+  web|static-site|webapp) TESTS_REQUIRED=0 ;;   # journey/build gates land with P4
+  *)                       TESTS_REQUIRED=1 ;;
+esac
+
 RESULT="$RESULT" RUN_DIR="$RUN_DIR" RUN_ID="$RUN_ID" BASE_COMMIT="$BASE_COMMIT" CANDIDATE_COMMIT="$CANDIDATE_COMMIT" \
-SPEC_DIGEST="$SPEC_DIGEST" ACCEPTANCE_DIGEST="$ACCEPTANCE_DIGEST" VERIFIER_VERSION="$VERIFIER_VERSION" \
+SPEC_DIGEST="$SPEC_DIGEST" ACCEPTANCE_DIGEST="$ACCEPTANCE_DIGEST" VERIFIER_VERSION="3.0.0" \
+IDEA_ID="$IDEA_ID" ARTIFACT_TYPE="$ARTIFACT_TYPE" TESTS_REQUIRED="$TESTS_REQUIRED" TYPE_OK="${TYPE_OK:-0}" \
 ACC_EXIT="$ACC_EXIT" ACC_LOG="$ACC_LOG" OWN_EXIT="$OWN_EXIT" OWN_LOG="$OWN_LOG" SRC_COUNT="$SRC_COUNT" \
 ARTIFACT_DIGEST="$(git -C "$CLONE" rev-parse HEAD)" \
 "$PYBIN" - <<'PY'
@@ -81,6 +89,23 @@ now = datetime.datetime.now(datetime.timezone.utc).isoformat()
 def digest(p):
     try: return hashlib.sha256(open(p,'rb').read()).hexdigest()
     except Exception: return None
+own_exit = int(os.environ["OWN_EXIT"]); tests_required = os.environ["TESTS_REQUIRED"] == "1"
+candidate_tests = None if own_exit == -1 else (own_exit == 0)
+gates = {
+    "contract_ok": True,
+    "acceptance_ok": int(os.environ["ACC_EXIT"]) == 0,
+    "artifact_shape_ok": int(os.environ.get("TYPE_OK", "0")) == 1,
+    "real_implementation_ok": int(os.environ["SRC_COUNT"]) >= 1,
+    "candidate_tests_ok": ("not_applicable" if not tests_required
+                           else "unknown" if candidate_tests is None
+                           else candidate_tests),
+}
+required = {k: v for k, v in gates.items() if v != "not_applicable"}
+if any(v is False for v in required.values()): result = "FAIL"
+elif any(v == "unknown" for v in required.values()): result = "ERROR"
+elif all(v is True for v in required.values()): result = "PASS"
+else: result = "ERROR"
+
 checks = [
     {"id": "acceptance", "command": "pytest .acceptance -q", "exit_code": int(os.environ["ACC_EXIT"]), "stdout_digest": digest(os.environ["ACC_LOG"])},
     {"id": "own-tests", "command": "pytest tests -q", "exit_code": int(os.environ["OWN_EXIT"]), "stdout_digest": digest(os.environ["OWN_LOG"])},
@@ -88,27 +113,38 @@ checks = [
     {"id": "artifact-type-shape", "command": os.environ.get("ARTIFACT_TYPE","cli") + " shape check", "exit_code": int(os.environ.get("TYPE_OK","0")), "stdout_digest": None},
 ]
 receipt = {
+    "schema": "verification-receipt",
+    "version": 3,
     "run_id": os.environ["RUN_ID"],
+    "idea_id": os.environ.get("IDEA_ID", ""),
+    "artifact_type": os.environ.get("ARTIFACT_TYPE", "cli"),
     "base_commit": os.environ["BASE_COMMIT"],
     "candidate_commit": os.environ["CANDIDATE_COMMIT"],
     "spec_digest": os.environ["SPEC_DIGEST"],
-    "acceptance_digest": os.environ["ACCEPTANCE_DIGEST"],
+    "public_acceptance_digest": os.environ["ACCEPTANCE_DIGEST"],
+    "hidden_challenge_commitment": None,
     "artifact_digest": os.environ["ARTIFACT_DIGEST"],
+    "builder_identity": "hermes:builder@unbundled-board",
+    "verifier_identity": f"verify-candidate.sh@{os.environ['VERIFIER_VERSION']}",
+    "gates": gates,
     "checks": checks,
     "verifier_version": os.environ["VERIFIER_VERSION"],
     "started_at": now,
     "finished_at": now,
-    "result": os.environ["RESULT"],
+    "result": result,
 }
 open(os.path.join(os.environ.get("RUN_DIR", ""), "receipt.json"), "w").write(json.dumps(receipt, indent=2))
+with open("/tmp/.v3_result", "w") as f: f.write(result)
 PY
+RESULT=$(cat /tmp/.v3_result 2>/dev/null || echo ERROR); rm -f /tmp/.v3_result
 [ -f "$RUN_DIR/receipt.json" ] || fail_err "receipt write failed"
 "$PYBIN" -c "
 import json,sys
 r=json.load(open('$RUN_DIR/receipt.json'))
 assert r.get('result') == '$RESULT', f'receipt result mismatch: {r.get(\"result\")}'
 assert 'checks' in r and r['checks'], 'receipt missing checks'
+assert 'gates' in r and r['gates'], 'receipt missing gates'
 " || fail_err "receipt validation failed"
 
-echo "verdict: $RESULT (acceptance_exit=$ACC_EXIT own_exit=$OWN_EXIT src_files=$SRC_COUNT)"
+echo "verdict: $RESULT (acceptance_exit=$ACC_EXIT own_exit=$OWN_EXIT src_files=$SRC_COUNT type=$ARTIFACT_TYPE tests_required=$TESTS_REQUIRED)"
 [ "$RESULT" = "PASS" ] && exit 0 || exit 1
