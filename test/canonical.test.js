@@ -86,22 +86,49 @@ test('MCPRegistryClient generates server.json', async () => {
 });
 
 test('ChatGPTAppsSDK generates manifest', async () => {
-  const sdk = new ChatGPTAppsSDK();
-  const capabilities = [{
-    id: 'get://json/repair',
-    name: 'Repair malformed JSON',
-    description: 'Fix trailing commas.',
-    path: '/json/repair'
+  const sdk = new ChatGPTAppsSDK({ baseUrl: 'https://example.com' });
+  const site = { name: 'Domain Availability Checker' };
+  const tools = [{
+    name: 'check_domain_availability',
+    description: 'Use when the user asks whether a specific domain is available. Returns live availability plus price.',
+    inputSchema: { type: 'object', properties: { domain: { type: 'string' } }, required: ['domain'] },
+    annotations: { readOnlyHint: true, openWorldHint: true, destructiveHint: false },
   }];
-  const manifest = sdk.generateManifest(capabilities);
-  assert.equal(manifest.name, 'GET');
+  const manifest = sdk.generateManifest(site, tools);
+  assert.equal(manifest.plugin.name, 'Domain Availability Checker');
   assert.ok(manifest.tools.length > 0);
+  assert.equal(manifest.tools[0].annotations.readOnlyHint, true);
 });
 
-test('ChatGPTAppsSDK generates connect link', async () => {
-  const sdk = new ChatGPTAppsSDK();
-  const cap = { id: 'get://json/repair' };
-  const link = sdk.generateConnectLink(cap);
-  assert.ok(link.includes('chatgpt.com'));
-  assert.ok(link.includes('json_repair'));
+test('ChatGPTAppsSDK submission bundle validates', async () => {
+  const sdk = new ChatGPTAppsSDK({ baseUrl: 'https://example.com' });
+  const bundle = sdk.generateSubmissionBundle({
+    site: { name: 'Domain Availability Checker' },
+    listing: {
+      name: 'Domain Availability Checker',
+      shortDescription: 'Check if a domain name is available right now.',
+      longDescription: 'Live registry availability plus pricing.',
+      category: 'productivity',
+      website: 'https://example.com',
+      supportUrl: 'https://example.com/support',
+      privacyPolicyUrl: 'https://example.com/privacy',
+      termsUrl: 'https://example.com/terms',
+    },
+    tools: [{
+      name: 'check_domain_availability',
+      description: 'Use when the user asks whether a specific domain is available. Returns live availability plus price.',
+      inputSchema: { type: 'object', properties: { domain: { type: 'string' } }, required: ['domain'] },
+      outputSchema: { type: 'object', properties: { available: { type: 'boolean' } } },
+      annotations: { readOnlyHint: true, openWorldHint: true, destructiveHint: false },
+      annotationJustification: 'Public registry read; no state change.',
+    }],
+    prompts: ['Is dentivo.com available?'],
+    testCases: {
+      positive: [1, 2, 3, 4, 5].map(i => ({ prompt: `positive ${i}`, expected: 'tool result' })),
+      negative: [1, 2, 3].map(i => ({ prompt: `negative ${i}`, expected: 'refusal' })),
+    },
+    availability: ['GB'],
+    releaseNotes: 'test',
+  });
+  assert.equal(bundle.validation.valid, true);
 });

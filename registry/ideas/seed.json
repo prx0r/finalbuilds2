@@ -11,6 +11,12 @@
       "name": "Pricing Mismatch Scanner",
       "method": "Find occasional-use paid utilities whose marginal execution cost is near zero and whose subscription model is poorly matched to usage.",
       "version": "1"
+    },
+    {
+      "id": "idea_gen_chatgpt_gap_crawler_v1",
+      "name": "ChatGPT Gap Crawler",
+      "method": "Find prompts where ChatGPT reasons well but lacks live data, proprietary data, specialist algorithm, verification, or action. Classify per openaifinal.md section 9. Discard anything ChatGPT does natively.",
+      "version": "1"
     }
   ],
   "ideas": [
@@ -45,6 +51,123 @@
       "generator_id": "idea_gen_capability_gap_v1",
       "problem": "Generic PDF summarization is already native to frontier models.",
       "scores": { "delta": 0, "pain": 1, "cost_collapse": 1, "composability": 1, "evidence": 0, "build_leverage": 3 }
+    },
+    {
+      "id": "idea_handle_checker",
+      "name": "HandleChecker",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents can invent brand names but cannot verify live cross-platform username availability (GitHub, X, npm, PyPI, TikTok, etc.) in one call. Gap: cross-platform username truth.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 3, "pain": 2, "cost_collapse": 2, "composability": 3, "evidence": 2, "build_leverage": 3 }
+    },
+    {
+      "id": "idea_fit_checker",
+      "name": "FitChecker",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot answer 'does this part fit this machine' without a compatibility graph. Gap: parts compatibility.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 3, "pain": 3, "cost_collapse": 2, "composability": 2, "evidence": 1, "build_leverage": 1 }
+    },
+    {
+      "id": "idea_company_checker",
+      "name": "CompanyChecker",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot verify UK company/name availability against Companies House at conversation time. Gap: UK company and name availability.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 3, "pain": 2, "cost_collapse": 2, "composability": 3, "evidence": 2, "build_leverage": 2 }
+    },
+    {
+      "id": "idea_stock_checker",
+      "name": "StockChecker",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot see live local supplier stock before promising availability. Gap: local supplier stock truth.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 2, "cost_collapse": 2, "composability": 2, "evidence": 1, "build_leverage": 1 }
+    },
+    {
+      "id": "idea_market_price",
+      "name": "MarketPrice",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot quote marketplace historical pricing to answer 'what is this worth'. Gap: marketplace historical pricing.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 2, "cost_collapse": 2, "composability": 2, "evidence": 2, "build_leverage": 2 }
+    },
+    {
+      "id": "idea_ship_quote",
+      "name": "ShipQuote",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot produce a live shipping quote without carrier rate access. Gap: shipping quote execution.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 2, "cost_collapse": 1, "composability": 3, "evidence": 1, "build_leverage": 1 }
+    },
+    {
+      "id": "idea_property_check",
+      "name": "PropertyCheck",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot return verified property facts (tenure, EPC, planning history) in one call. Gap: property facts.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 2, "cost_collapse": 2, "composability": 2, "evidence": 1, "build_leverage": 1 }
+    },
+    {
+      "id": "idea_compliance_check",
+      "name": "ComplianceCheck",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot deterministically verify product compliance against rules where hallucination is fatal. Gap: product compliance verification.",
+      "gap_class": "deterministic_verification",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 3, "pain": 3, "cost_collapse": 2, "composability": 2, "evidence": 1, "build_leverage": 1 }
+    },
+    {
+      "id": "idea_supplier_check",
+      "name": "SupplierCheck",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot verify whether a supplier is trustworthy (registration, history, risk signals) at decision time. Gap: supplier verification.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 3, "cost_collapse": 1, "composability": 2, "evidence": 1, "build_leverage": 1 }
+    },
+    {
+      "id": "idea_product_match",
+      "name": "ProductMatch",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot match a retail SKU to its wholesale/supplier equivalent. Gap: SKU matching across supplier graphs.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 2, "cost_collapse": 2, "composability": 3, "evidence": 1, "build_leverage": 2 }
+    },
+    {
+      "id": "idea_quote_check",
+      "name": "QuoteCheck",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot benchmark a contractor quote against live local pricing to answer 'what should I charge/pay'. Gap: quote benchmarking. Related: decision.kitchen_auditor (KitchenQuoteAuditor, ideabank) — kitchen-specific decision engine; this is the agent-facing primitive.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 2, "cost_collapse": 2, "composability": 2, "evidence": 2, "build_leverage": 2 }
+    },
+    {
+      "id": "idea_stack_check",
+      "name": "StackCheck",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot deterministically report what technology a website runs on. Gap: website technology detection.",
+      "gap_class": "deterministic_verification",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 1, "cost_collapse": 3, "composability": 3, "evidence": 2, "build_leverage": 3 }
+    },
+    {
+      "id": "idea_service_finder",
+      "name": "ServiceFinder",
+      "generator_id": "idea_gen_chatgpt_gap_crawler_v1",
+      "problem": "Agents cannot answer 'get me an electrician tomorrow' without live local provider availability. Gap: real local service availability.",
+      "gap_class": "live_data",
+      "source": "openaifinal.md section 9",
+      "scores": { "delta": 2, "pain": 3, "cost_collapse": 1, "composability": 3, "evidence": 1, "build_leverage": 1 }
     }
   ]
 }

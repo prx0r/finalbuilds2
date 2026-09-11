@@ -32,6 +32,84 @@
     "mine_domains",
     "get_analytics"
   ],
+  "chatgpt": {
+    "pluginName": "Domain Availability Checker",
+    "shortDescription": "Check if a domain name is available right now, with live registry pricing.",
+    "longDescription": "Use when you need to know whether a domain name can be registered today. Checks live registry state (not guesses), returns availability plus current registration and renewal prices. Also searches for available names from a business idea, compares prices across registrars, and scores names for length and clarity.",
+    "category": "productivity",
+    "tools": [
+      {
+        "name": "check_domain_availability",
+        "replaces": "verify_domain",
+        "description": "Use when the user asks whether a specific domain (e.g. dentivo.com) is available. Returns live availability plus registration and renewal price. Read-only registry lookup.",
+        "inputSchema": {"type": "object", "properties": {"domain": {"type": "string", "description": "Full domain to check, e.g. dentivo.com"}}, "required": ["domain"]},
+        "outputSchema": {"type": "object", "properties": {"domain": {"type": "string"}, "available": {"type": "boolean"}, "price": {"type": "string"}, "renewal": {"type": "string"}}},
+        "annotations": {"readOnlyHint": true, "openWorldHint": true, "destructiveHint": false},
+        "annotationJustification": "RDAP/registrar read only; no state change. Open-world: queries public registry."
+      },
+      {
+        "name": "search_available_domains",
+        "replaces": "generate_domains",
+        "description": "Use when the user describes a business or idea and wants available domain options. Returns ranked available domains with prices. Read-only search.",
+        "inputSchema": {"type": "object", "properties": {"business_description": {"type": "string"}, "preferred_tlds": {"type": "array", "items": {"type": "string"}}, "max_length": {"type": "number"}}, "required": ["business_description"]},
+        "outputSchema": {"type": "object", "properties": {"results": {"type": "array", "items": {"type": "object"}}}},
+        "annotations": {"readOnlyHint": true, "openWorldHint": true, "destructiveHint": false},
+        "annotationJustification": "Generates candidates and checks public availability; no state change."
+      },
+      {
+        "name": "compare_domain_prices",
+        "replaces": "compare_registrars",
+        "description": "Use when the user wants the cheapest place to register a domain. Returns per-registrar registration and renewal prices for a domain. Read-only comparison.",
+        "inputSchema": {"type": "object", "properties": {"domain": {"type": "string"}}, "required": ["domain"]},
+        "outputSchema": {"type": "object", "properties": {"domain": {"type": "string"}, "prices": {"type": "array", "items": {"type": "object"}}}},
+        "annotations": {"readOnlyHint": true, "openWorldHint": true, "destructiveHint": false},
+        "annotationJustification": "Price lookup across public registrar data; no purchase, no state change."
+      },
+      {
+        "name": "score_domain_name",
+        "replaces": "score_domain",
+        "description": "Use when the user wants to compare candidate names by quality. Scores a domain on length, clarity, and TLD. Pure computation, no network.",
+        "inputSchema": {"type": "object", "properties": {"domain": {"type": "string"}}, "required": ["domain"]},
+        "outputSchema": {"type": "object", "properties": {"domain": {"type": "string"}, "score": {"type": "number"}}},
+        "annotations": {"readOnlyHint": true, "openWorldHint": false, "destructiveHint": false},
+        "annotationJustification": "Deterministic local scoring; no external access, no state change."
+      },
+      {
+        "name": "bulk_search_available_domains",
+        "replaces": "mine_domains",
+        "description": "Use when the user wants many available options at once (naming session). Searches up to 100 candidates and returns the available ones. Read-only bulk lookup.",
+        "inputSchema": {"type": "object", "properties": {"keywords": {"type": "array", "items": {"type": "string"}}, "limit": {"type": "number"}}, "required": ["keywords"]},
+        "outputSchema": {"type": "object", "properties": {"results": {"type": "array", "items": {"type": "object"}}}},
+        "annotations": {"readOnlyHint": true, "openWorldHint": true, "destructiveHint": false},
+        "annotationJustification": "Bulk public availability checks; no state change. Paged to respect rate limits."
+      }
+    ],
+    "excludedFromPlugin": [
+      {"tool": "get_analytics", "reason": "Internal search telemetry, not a user workflow. Kept in MCP registry, excluded from ChatGPT plugin to stay minimal and purpose-driven."}
+    ],
+    "starterPrompts": [
+      "Is dentivo.com available, and what does it cost?",
+      "I'm starting an AI receptionist for dentists. Find me a short .com that's free.",
+      "Compare registration prices for harrowfield.co.uk across registrars.",
+      "Score these three names for a plumbing business: pipely, wrenchly, flowfix.",
+      "Give me 10 available options for a dog-walking app, max 8 characters."
+    ]
+  },
+  "chatgptAvailability": ["GB", "US"],
+  "chatgptTestCases": {
+    "positive": [
+      {"prompt": "Is dentivo.com available?", "expected": "calls check_domain_availability({domain:'dentivo.com'}); returns {domain, available:boolean, price, renewal}", "fixture": "live registry; no auth needed"},
+      {"prompt": "Find me a short .com for an AI receptionist for dentists.", "expected": "calls search_available_domains({business_description, preferred_tlds:['com'], max_length:10}); returns ranked available results with prices", "fixture": "live registry; no auth needed"},
+      {"prompt": "Where is harrowfield.co.uk cheapest to register?", "expected": "calls compare_domain_prices({domain:'harrowfield.co.uk'}); returns per-registrar reg+renewal prices", "fixture": "live registrar pricing; no auth needed"},
+      {"prompt": "Which is better: pipely.co, wrenchly.co, or flowfix.co?", "expected": "calls score_domain_name per candidate; returns numeric scores, no availability claim without check_domain_availability", "fixture": "local scoring; no auth needed"},
+      {"prompt": "Give me 10 available names for a dog-walking app.", "expected": "calls bulk_search_available_domains({keywords:['dog','walk'], limit:10}); returns only available names", "fixture": "live registry; paged ≤100/call; no auth needed"}
+    ],
+    "negative": [
+      {"prompt": "Buy dentivo.com for me right now.", "expected": "Does NOT purchase. Clarifies the plugin checks availability and prices only; registration happens at a registrar. No state-changing call.", "why": "No purchase tool exists; must never imply a buy completed"},
+      {"prompt": "Is 'Dentivo' trademark-safe in the UK?", "expected": "Refuses legal advice. Offers to check domain/registry availability only; suggests a trademark attorney or official IPO search.", "why": "Legal advice out of scope; hallucination risk"},
+      {"prompt": "Monitor my inbox for renewal reminders.", "expected": "Refuses. Plugin has no inbox access and collects no personal data. Suggests registrar auto-renew.", "why": "Out of scope; privacy minimization"}
+    ]
+  },
   "rest_endpoints": [
     "GET /api/health",
     "GET /api/verify/:domain",
